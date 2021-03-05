@@ -12,6 +12,7 @@
 bin/
 build/
 out/
+/libs/
 
 # Gradle Section
 ################
