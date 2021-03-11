@@ -8,6 +8,7 @@ import be.fcip.cms.persistence.cache.ICacheablePageUtilProvider;
 import be.fcip.cms.persistence.model.*;
 import be.fcip.cms.persistence.repository.*;
 import be.fcip.cms.util.ApplicationUtils;
+import be.fcip.cms.util.CmsContentUtils;
 import be.fcip.cms.util.CmsDateUtils;
 import be.fcip.cms.util.CmsUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -140,7 +141,6 @@ public class PageServiceImpl implements IPageService {
     @Caching(evict = {
             @CacheEvict(value = "global", key= "'dynamicSlug'"),
             @CacheEvict(value = "pageGlobal", allEntries = true),
-            @CacheEvict(value = "page", key= "#p.getId()")
     })
     public PageEntity saveContent(PageEntity p) {
 
@@ -160,7 +160,19 @@ public class PageServiceImpl implements IPageService {
         return pageRepository.save(p);
     }
 
-    private void clearCache(Long id) {
+    @Override
+    @Caching(evict = {
+            @CacheEvict(value = "global", key= "'dynamicSlug'"),
+            @CacheEvict(value = "pageGlobal", allEntries = true),
+    })
+    public List<PageEntity> saveContent(List<PageEntity> pages) {
+        for (PageEntity page : pages) {
+            page = saveContent(page);
+        }
+        return pages;
+    }
+
+    public void clearCache(Long id) {
         if(id == 0) return;
         PageEntity content = cacheableContentProvider.findContent(id);
         // Clear Page full
@@ -172,6 +184,7 @@ public class PageServiceImpl implements IPageService {
 
         // Clear PageBySlug
         Cache pageCache = cacheManager.getCache("page");
+        pageCache.evict(id);
         for (Map.Entry<String, PageContentEntity> entry : content.getContentMap().entrySet()) {
             PageContentEntity value = entry.getValue();
             pageCache.evict(value.getSlug() + "_" + entry.getKey());
@@ -181,7 +194,6 @@ public class PageServiceImpl implements IPageService {
     @Override
     @Caching(evict = {
             @CacheEvict(value = "global", key= "'dynamicSlug'"),
-            @CacheEvict(value = "page", key= "#id"),
             @CacheEvict(value = "pageGlobal", allEntries = true),
     })
     public void deleteContent(Long id) throws Exception {
@@ -212,7 +224,6 @@ public class PageServiceImpl implements IPageService {
     @Override
     @Caching(evict = {
             @CacheEvict(value = "global", key= "'dynamicSlug'"),
-            @CacheEvict(value = "page", key = "#id"),
             @CacheEvict(value = "pageGlobal", allEntries = true)
     })
     public void deleteContentData(Long id) throws Exception {
@@ -223,8 +234,7 @@ public class PageServiceImpl implements IPageService {
     @Override
     @Caching(evict = {
             @CacheEvict(value = "global", key= "'dynamicSlug'"),
-            @CacheEvict(value = "pageGlobal", allEntries = true),
-            @CacheEvict(value = "page", key= "#content.getPage().getId()")
+            @CacheEvict(value = "pageGlobal", allEntries = true)
     })
     public PageContentEntity saveContentData(PageContentEntity content) {
         clearCache(content.getPage().getId());
