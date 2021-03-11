@@ -166,11 +166,10 @@ public class PageServiceImpl implements IPageService {
         // Clear Page full
         Cache fullCache = cacheManager.getCache("pageFull");
         Cache shortCache = cacheManager.getCache("pageShort");
-        for (Locale locale : ApplicationUtils.locales) {
-            String key = id + "_" + locale.toString();
-            fullCache.evict(key);
-            shortCache.evict(key);
-        }
+        // full clear because the page can be in a menu
+        fullCache.clear();
+        shortCache.clear();
+
         // Clear PageBySlug
         Cache pageCache = cacheManager.getCache("page");
         for (Map.Entry<String, PageContentEntity> entry : content.getContentMap().entrySet()) {
