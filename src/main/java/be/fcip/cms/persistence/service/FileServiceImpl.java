@@ -24,42 +24,9 @@ public class FileServiceImpl implements IFileService {
     private IPageFileRepository pageFileRepository;
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "content", allEntries = true),
-
-    })
-    public PageFileEntity save(PageFileEntity file) {
-        return pageFileRepository.save(file);
-    }
-
-    @Override
-    @Caching(evict = {
-            @CacheEvict(value = "content", allEntries = true),
-
-    })
-    public List<PageFileEntity> save(List<PageFileEntity> files) {
-        return pageFileRepository.saveAll(files);
-    }
-
-    @Override
-    public PageFileEntity findOne(Long id) {
-        return pageFileRepository.findById(id).orElse(null);
-    }
-
-    @Override
     public PageFileEntity findServerName(String serverName) {
         return pageFileRepository.findByServerName(serverName);
     }
-
-    @Override
-    @Caching(evict = {
-            @CacheEvict(value = "content", allEntries = true),
-
-    })
-    public void delete(Long id) {
-        pageFileRepository.deleteById(id);
-    }
-
 
     @Override
     public List<PageFileEntity> getFilesList(Long contentDataId, String type) {

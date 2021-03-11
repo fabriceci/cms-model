@@ -19,8 +19,6 @@ public interface IPageService {
     // Save
     @PreAuthorize("hasAnyRole('ROLE_ADMIN_CMS', 'ROLE_ADMIN_WEBCONTENT')")
     PageEntity saveContent(PageEntity p);
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN_CMS', 'ROLE_ADMIN_WEBCONTENT')")
-    List<PageEntity> saveContent(List<PageEntity> pages);
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN_CMS', 'ROLE_ADMIN_WEBCONTENT')")
     PageContentEntity saveContentData(PageContentEntity content);

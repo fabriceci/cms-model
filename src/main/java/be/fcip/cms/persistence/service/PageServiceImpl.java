@@ -18,7 +18,6 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.pattern.PatternParseException;
@@ -139,16 +138,13 @@ public class PageServiceImpl implements IPageService {
     }
     @Override
     @Caching(evict = {
-            @CacheEvict(value = "dynamicSlug", allEntries = true),
-            @CacheEvict(value = "contentBySlug", allEntries = true),
-            @CacheEvict(value = "adminTree", allEntries = true),
-            @CacheEvict(value = "mainNav", allEntries = true),
-            @CacheEvict(value = "content", allEntries = true),
-            @CacheEvict(value = "searchContent", allEntries = true),
+            @CacheEvict(value = "global", key= "'dynamicSlug'"),
+            @CacheEvict(value = "pageGlobal", allEntries = true),
+            @CacheEvict(value = "page", key= "#p.getId()")
     })
     public PageEntity saveContent(PageEntity p) {
 
-        clearFirstCache(p.getId());
+        clearCache(p.getId());
         if (p.getId() == 0) {
             PageEntity parent = p.getPageParent();
 
@@ -164,8 +160,10 @@ public class PageServiceImpl implements IPageService {
         return pageRepository.save(p);
     }
 
-    private void clearFirstCache(long id) {
+    private void clearCache(Long id) {
         if(id == 0) return;
+        PageEntity content = cacheableContentProvider.findContent(id);
+        // Clear Page full
         Cache fullCache = cacheManager.getCache("pageFull");
         Cache shortCache = cacheManager.getCache("pageShort");
         for (Locale locale : ApplicationUtils.locales) {
@@ -173,35 +171,19 @@ public class PageServiceImpl implements IPageService {
             fullCache.evict(key);
             shortCache.evict(key);
         }
-    }
-
-    @Override
-    @Caching(evict = {
-            @CacheEvict(value = "dynamicSlug", allEntries = true),
-            @CacheEvict(value = "contentBySlug", allEntries = true),
-            @CacheEvict(value = "adminTree", allEntries = true),
-            @CacheEvict(value = "mainNav", allEntries = true),
-            @CacheEvict(value = "content", allEntries = true),
-            @CacheEvict(value = "searchContent", allEntries = true),
-    })
-    public List<PageEntity> saveContent(List<PageEntity> pages) {
-
-        for (PageEntity page : pages) {
-            clearFirstCache(page.getId());
-            saveContent(page);
+        // Clear PageBySlug
+        Cache pageCache = cacheManager.getCache("page");
+        for (Map.Entry<String, PageContentEntity> entry : content.getContentMap().entrySet()) {
+            PageContentEntity value = entry.getValue();
+            pageCache.evict(value.getSlug() + "_" + entry.getKey());
         }
-        return pages;
     }
-
 
     @Override
     @Caching(evict = {
-            @CacheEvict(value = "dynamicSlug", allEntries = true),
-            @CacheEvict(value = "contentBySlug", allEntries = true),
-            @CacheEvict(value = "adminTree", allEntries = true),
-            @CacheEvict(value = "content", allEntries = true),
-            @CacheEvict(value = "mainNav", allEntries = true),
-            @CacheEvict(value = "searchContent", allEntries = true),
+            @CacheEvict(value = "global", key= "'dynamicSlug'"),
+            @CacheEvict(value = "page", key= "#id"),
+            @CacheEvict(value = "pageGlobal", allEntries = true),
     })
     public void deleteContent(Long id) throws Exception {
         PageEntity current = pageRepository.findOne(id);
@@ -214,7 +196,7 @@ public class PageServiceImpl implements IPageService {
             throw new Exception("Page with id = " + id + " has children !");
         // delete
         PageEntity parent = current.getPageParent();
-        clearFirstCache(current.getId());
+        clearCache(current.getId());
         pageRepository.deleteById(id);
 
         List<PageEntity> pages = pageRepository.findByPageParentOrderByPositionAsc(parent);
@@ -230,29 +212,23 @@ public class PageServiceImpl implements IPageService {
 
     @Override
     @Caching(evict = {
-            @CacheEvict(value = "dynamicSlug", allEntries = true),
-            @CacheEvict(value = "contentBySlug", allEntries = true),
-            @CacheEvict(value = "adminTree", allEntries = true),
-            @CacheEvict(value = "content", allEntries = true),
-            @CacheEvict(value = "mainNav", allEntries = true),
-            @CacheEvict(value = "searchContent", allEntries = true),
+            @CacheEvict(value = "global", key= "'dynamicSlug'"),
+            @CacheEvict(value = "page", key = "#id"),
+            @CacheEvict(value = "pageGlobal", allEntries = true)
     })
     public void deleteContentData(Long id) throws Exception {
-        clearFirstCache(id);
+        clearCache(id);
         pageContentRepository.deleteById(id);
     }
 
     @Override
     @Caching(evict = {
-            @CacheEvict(value = "dynamicSlug", allEntries = true),
-            @CacheEvict(value = "contentBySlug", allEntries = true),
-            @CacheEvict(value = "adminTree", allEntries = true),
-            @CacheEvict(value = "mainNav", allEntries = true),
-            @CacheEvict(value = "content", allEntries = true),
-            @CacheEvict(value = "searchContent", allEntries = true),
+            @CacheEvict(value = "global", key= "'dynamicSlug'"),
+            @CacheEvict(value = "pageGlobal", allEntries = true),
+            @CacheEvict(value = "page", key= "#content.getPage().getId()")
     })
     public PageContentEntity saveContentData(PageContentEntity content) {
-        clearFirstCache(content.getPage().getId());
+        clearCache(content.getPage().getId());
         return pageContentRepository.save(content);
     }
 
