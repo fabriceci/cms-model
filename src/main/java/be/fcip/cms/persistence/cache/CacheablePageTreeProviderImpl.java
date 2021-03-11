@@ -77,7 +77,7 @@ public class CacheablePageTreeProviderImpl implements ICacheablePageTreeProvider
     // ---
 
     @Override
-    @Cacheable(value = "mainNav")
+    @Cacheable(value = "pageGlobal")
     public String getMenu(Long contentId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot) {
         List<PageEntity> rootsByContentIdCustom = pageRepository.findRootsByContentIdCustom(contentId, lang,
                 true);
@@ -104,7 +104,7 @@ public class CacheablePageTreeProviderImpl implements ICacheablePageTreeProvider
     }
 
     @Override
-    @Cacheable(value = "adminTree")
+    @Cacheable(value = "pageGlobal")
     public String getPagesTree(String lang, String type) {
 
         // Use first level cache to do all the tree in only 2 requests
@@ -122,7 +122,7 @@ public class CacheablePageTreeProviderImpl implements ICacheablePageTreeProvider
     }
 
     @Override
-    @Cacheable(value = "content")
+    @Cacheable(value = "pageGlobal")
     public String getBreadcrumb(PageEntity content, String locale, String separator, Long parendId, boolean h1) {
         if (content == null)
             return null;

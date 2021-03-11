@@ -32,20 +32,20 @@ public class CacheablePageProviderImpl implements ICacheablePageProvider {
     @PersistenceContext(unitName = "core")
     private EntityManager entityManager;
 
-    @Cacheable(value = "contentBySlug", key = "#slug + '-' + #locale.toString()")
+    @Cacheable(value = "page", key = "#slug + '_' + #locale.toString()")
     @Override
     public Long findContentId(String slug, Locale locale) {
         return contentDataRepository.findContentIdByComputedSlugAndLanguageLocale(slug, locale.toString());
     }
 
-    @Cacheable(value = "content", key = "#id")
+    @Cacheable(value = "page", key = "#id")
     @Override
     public PageEntity findContent(Long id) {
         return contentRepository.findContentCustom(id);
     }
 
     @Override
-    @Cacheable(value = "searchContent")
+    @Cacheable(value = "pageGlobal")
     public PageableResult<PageEntity> findWebContent(String locale, LocalDateTime begin, LocalDateTime end, String name, String type, String theme, String tags, String contentType, Long pageNumber, Long limit, Boolean isPrivate) {
 
         PageableResult<PageEntity> pageablePageEntity = new PageableResult<>();
@@ -61,7 +61,7 @@ public class CacheablePageProviderImpl implements ICacheablePageProvider {
     }
 
     @Override
-    @Cacheable(value = "dynamicSlug")
+    @Cacheable(value = "pageGlobal")
     public Map<Long, Set<Pattern>> getDynamicUrl() throws PatternSyntaxException {
         Map<Long, Set<Pattern>> map = new HashMap<>();
         Set<PageEntity> allDynamicUrlPages = contentRepository.findAllDynamicUrlPages();

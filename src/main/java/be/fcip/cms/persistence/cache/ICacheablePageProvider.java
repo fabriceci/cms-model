@@ -19,6 +19,5 @@ public interface ICacheablePageProvider {
 
     PageableResult<PageEntity> findWebContent(String locale, LocalDateTime begin, LocalDateTime end, String name, String type, String theme, String tags, String contentType, Long pageNumber, Long limit, Boolean isPrivate);
 
-    @Cacheable(value = "dynamicSlug")
     Map<Long, Set<Pattern>> getDynamicUrl() throws PatternSyntaxException;
 }

@@ -9,7 +9,6 @@ import java.util.List;
 public interface ICacheablePageTreeProvider {
     List<TreeItem> getTreeItems(Long websiteId);
 
-    @Cacheable(value = "mainNav")
     String getMenu(Long contentId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot);
 
     String getPagesTree(String lang, String type);

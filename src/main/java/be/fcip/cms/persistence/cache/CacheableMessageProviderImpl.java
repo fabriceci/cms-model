@@ -20,7 +20,7 @@ public class CacheableMessageProviderImpl implements ICacheableMessageProvider {
     private IWordRepository messageRepository;
 
     @Override
-    @Cacheable(value = "localizedMessage")
+    @Cacheable(value = "global", key="'messages'")
     public Map<String, Map<String, String>> mapOfTranslation() {
         Set<WordEntity> messages = messageRepository.findAllMessage();
         Map<String, Map<String, String>> result = new HashMap<>();

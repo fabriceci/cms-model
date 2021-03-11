@@ -47,19 +47,19 @@ public class MessageServiceImpl implements IMessageService {
     }
 
     @Override
-    @CacheEvict(value = "localizedMessage", allEntries = true)
+    @CacheEvict(value = "global", key="'messages'")
     public WordEntity save(WordEntity message) {
         return messageRepository.save(message);
     }
 
     @Override
-    @CacheEvict(value = "localizedMessage", allEntries = true)
+    @CacheEvict(value = "global", key="'messages'")
     public List<WordEntity> save(List<WordEntity> messages) {
         return messageRepository.saveAll(messages);
     }
 
     @Override
-    @CacheEvict(value = "localizedMessage", allEntries = true)
+    @CacheEvict(value = "global", key="'messages'")
     public void delete(Long id) {
         messageRepository.deleteById(id);
     }
@@ -106,7 +106,7 @@ public class MessageServiceImpl implements IMessageService {
     }
 
     @Override
-    @CacheEvict(value = "localizedMessage", allEntries = true)
+    @CacheEvict(value = "global", key="'messages'")
     public WordEntity addMessage(Long id, List<String> langs, List<String> values, String domain) {
 
         WordEntity messageEntity = messageRepository.findById(id).orElse(null);

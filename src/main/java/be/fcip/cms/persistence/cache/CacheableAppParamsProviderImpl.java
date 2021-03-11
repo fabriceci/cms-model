@@ -18,7 +18,7 @@ public class CacheableAppParamsProviderImpl implements ICacheableAppParamsProvid
     private IAppParamRepository appParamRepository;
 
     @Override
-    @Cacheable(value = "params")
+    @Cacheable(value = "global", key= "'appParams'")
     public LinkedHashMap<String, String> getParams() {
         return appParamRepository.findAll(Sort.by(Sort.Direction.ASC, "id")).stream().collect(
                 Collectors.toMap(AppParamEntity::getId, e ->  Optional.ofNullable(e.getValue()).orElse(""), (x,y) -> y, LinkedHashMap::new)

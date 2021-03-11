@@ -35,7 +35,7 @@ public class AppParamServiceImpl implements IAppParamService {
     }
 
     @Override
-    @CacheEvict(value = "params", allEntries = true)
+    @CacheEvict(value = "global", key= "'appParams'")
     public void delete(String id) {
 
         if(!IAppParamService.CORE_PARAMS.contains(id)) {
@@ -44,7 +44,7 @@ public class AppParamServiceImpl implements IAppParamService {
     }
 
     @Override
-    @CacheEvict(value = "params", allEntries = true)
+    @CacheEvict(value = "global", key= "'appParams'")
     public void delete(AppParamEntity param) {
         if(!IAppParamService.CORE_PARAMS.contains(param.getId())){
             appParamRepository.delete(param);
@@ -52,13 +52,13 @@ public class AppParamServiceImpl implements IAppParamService {
     }
 
     @Override
-    @CacheEvict(value = "params", allEntries = true)
+    @CacheEvict(value = "global", key= "'appParams'")
     public AppParamEntity save(AppParamEntity param) {
         return appParamRepository.save(param);
     }
 
     @Override
-    @CacheEvict(value = "params", allEntries = true)
+    @CacheEvict(value = "global", key= "'appParams'")
     public List<AppParamEntity> save(List<AppParamEntity> params) {
         return appParamRepository.saveAll(params);
     }
@@ -101,7 +101,7 @@ public class AppParamServiceImpl implements IAppParamService {
     }
 
     @Override
-    @CacheEvict(value = "params", allEntries = true)
+    @CacheEvict(value = "global", key= "'appParams'")
     public void setMaintenance(boolean value) {
         Optional<AppParamEntity> maintenance = findOne("maintenance");
         maintenance.ifPresent((m) -> {
