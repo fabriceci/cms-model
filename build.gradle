@@ -10,7 +10,7 @@ buildscript {
 }
 
 plugins {
-    id 'java'
+    id 'java-library'
 }
 
 apply plugin: 'java'
@@ -39,37 +39,37 @@ configurations {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    api 'org.springframework.boot:spring-boot-starter-web'
+    api 'org.springframework.boot:spring-boot-starter-security'
+    api 'org.springframework.boot:spring-boot-starter-mail'
 
     // cache
-    implementation 'org.cache2k:cache2k-spring:1.6.0.Final'
+    api 'org.cache2k:cache2k-spring:1.6.0.Final'
 
     // database
-    implementation 'org.springframework.data:spring-data-envers'
-    implementation 'com.vladmihalcea:hibernate-types-52:2.9.13'
-    implementation 'com.integralblue:log4jdbc-spring-boot-starter:2.0.0'
+    api 'org.springframework.data:spring-data-envers'
+    api 'com.vladmihalcea:hibernate-types-52:2.9.13'
+    api 'com.integralblue:log4jdbc-spring-boot-starter:2.0.0'
 
     // Common
-    implementation 'commons-fileupload:commons-fileupload:1.4'
-    implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation 'commons-beanutils:commons-beanutils:1.9.4'
+    api 'commons-fileupload:commons-fileupload:1.4'
+    api 'org.apache.commons:commons-lang3:3.11'
+    api 'commons-beanutils:commons-beanutils:1.9.4'
 
     // Libs
-    implementation 'io.pebbletemplates:pebble-spring5:3.1.5'
-    implementation 'org.passay:passay:1.6.0'
+    api 'io.pebbletemplates:pebble-spring5:3.1.5'
+    api 'org.passay:passay:1.6.0'
 
-    implementation group: 'org.json', name: 'json', version: '20180813'
-    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
-    implementation 'com.google.code.gson:gson'
+    api group: 'org.json', name: 'json', version: '20180813'
+    api 'org.apache.httpcomponents:httpclient:4.5.13'
+    api 'com.google.code.gson:gson'
 
     compileOnly 'org.projectlombok:lombok'
-    implementation 'com.querydsl:querydsl-jpa:4.4.0'
+    api 'com.querydsl:querydsl-jpa:4.4.0'
 
     // API
-    implementation 'javax.validation:validation-api:2.0.1.Final'
-    implementation 'javax.json:javax.json-api:1.1.4'
+    api 'javax.validation:validation-api:2.0.1.Final'
+    api 'javax.json:javax.json-api:1.1.4'
 
     // Processor
     annotationProcessor 'org.springframework.boot:spring-boot-starter-data-jpa' // For javax/persistence/Entity
