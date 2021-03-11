@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "website")
@@ -29,12 +29,12 @@ public class WebsiteEntity {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<PageEntity> pages;
+    private Set<PageEntity> pages;
 
-    @OneToMany(
-            mappedBy = "website",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
+    @ManyToMany
+    @JoinTable(name = "users_websites",
+            joinColumns = @JoinColumn(name = "website_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<UserEntity> users;
+    private Set<UserEntity> users;
 }

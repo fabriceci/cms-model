@@ -52,14 +52,17 @@ public class UserEntity extends AbstractTimestampEntity implements UserDetails {
             CascadeType.REMOVE
     })
     @JoinTable(name = "users_to_group",
-            joinColumns = @JoinColumn(name = "users_id"),
+            joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "user_group_id")
     )
     private Set<GroupEntity> groups = new HashSet<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "website_id")
-    private WebsiteEntity website;
+    @ManyToMany
+    @JoinTable(name = "users_websites",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "website_id")
+    )
+    private Set<WebsiteEntity> website;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -96,11 +96,6 @@ public class AppParamServiceImpl implements IAppParamService {
     }
 
     @Override
-    public boolean isExtranetActive() {
-        return getParam(PARAM_EXTRANET_ACTIVE).equals("true");
-    }
-
-    @Override
     @CacheEvict(value = "global", key= "'appParams'")
     public void setMaintenance(boolean value) {
         Optional<AppParamEntity> maintenance = findOne("maintenance");

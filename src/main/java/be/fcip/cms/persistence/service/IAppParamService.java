@@ -20,11 +20,10 @@ public interface IAppParamService {
     String PARAM_EMAIL_FROM_ADDRESS = "email_from_address";
     String PARAM_EMAIL_FROM_NAME = "email_from_name";
     String PARAM_EMAIL_DEV = "email_dev";
-    String PARAM_CACHE_ACTIVE = "cache_active";
-    String PARAM_EXTRANET_ACTIVE = "extranet_active";
+
     Set<String> CORE_PARAMS = new HashSet<>(Arrays.asList(
             PARAM_MAINTENANCE, PARAM_SEO_DESCRIPTION, PARAM_SEO_TAGS, PARAM_SEO_TITLE, PARAM_SITE_NAME, PARAM_SEO_H1, PARAM_SEO_IMAGE,
-            PARAM_EMAIL_CONTACT, PARAM_EMAIL_FROM_ADDRESS, PARAM_EMAIL_FROM_NAME, PARAM_EMAIL_DEV, PARAM_SITE_URL, PARAM_CACHE_ACTIVE, PARAM_EXTRANET_ACTIVE));
+            PARAM_EMAIL_CONTACT, PARAM_EMAIL_FROM_ADDRESS, PARAM_EMAIL_FROM_NAME, PARAM_EMAIL_DEV, PARAM_SITE_URL));
 
     /* Interface Methods */
     default boolean isCoreParam(String param){ return CORE_PARAMS.contains(param);}
@@ -46,7 +45,6 @@ public interface IAppParamService {
     String replaceTokenByParam(String template, String lang);
 
     boolean isMaintenance();
-    boolean isExtranetActive();
 
     void setMaintenance(boolean value);
     List<String> getContactEmails();

@@ -6,6 +6,7 @@ import be.fcip.cms.persistence.service.IAppParamService;
 import be.fcip.cms.persistence.service.IBlockService;
 import be.fcip.cms.persistence.service.IPageService;
 import be.fcip.cms.persistence.service.IPageTemplateService;
+import be.fcip.cms.util.ApplicationUtils;
 import be.fcip.cms.util.CmsContentUtils;
 import be.fcip.cms.util.CmsSecurityUtils;
 import be.fcip.cms.util.CmsUtils;
@@ -68,14 +69,13 @@ public class RenderPageServiceImpl implements IRenderPageService {
         model.put("templateName", contentTemplateDto.getName());
 
         // cache check
-        boolean extranet = appParamService.isExtranetActive();
         UserEntity currentUser = CmsSecurityUtils.getCurrentUser();
         Cache.ValueWrapper cacheWrapper = null;
         // TO DO : testé si on est en dev!
         String cacheKey = content.getId() + "_" + locale.toString();
-        if((!extranet || currentUser == null) && contentTemplateDto.isFullCache()){
+        if((currentUser == null) && contentTemplateDto.isFullCache()){
             cacheWrapper = cacheManager.getCache("pageFull").get(cacheKey);
-        } else if((!extranet || currentUser == null) && contentTemplateDto.isShortCache()){
+        } else if((currentUser == null) && contentTemplateDto.isShortCache()){
             cacheWrapper = cacheManager.getCache("pageShort").get(cacheKey);
         }
         if(cacheWrapper != null && cacheWrapper.get() != null){
@@ -155,9 +155,9 @@ public class RenderPageServiceImpl implements IRenderPageService {
         }
 
         final String result = peebleService.parseBlock(master, model);
-        if((!extranet || currentUser == null) && contentTemplateDto.isFullCache()){
+        if((currentUser == null) && contentTemplateDto.isFullCache()){
             cacheManager.getCache("pageFull").put(cacheKey, result);
-        } else if((!extranet || currentUser == null) && contentTemplateDto.isShortCache()){
+        } else if((currentUser == null) && contentTemplateDto.isShortCache()){
             cacheManager.getCache("pageShort").put(cacheKey, result);
         }
         return result;
