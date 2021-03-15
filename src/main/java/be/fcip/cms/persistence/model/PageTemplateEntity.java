@@ -54,4 +54,8 @@ public class PageTemplateEntity {
             orphanRemoval = true
     )
     private Set<PageEntity> pages = new HashSet<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "website_id")
+    private WebsiteEntity website;
 }

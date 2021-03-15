@@ -31,4 +31,8 @@ public class BlockEntity {
     private boolean enabled = true;
     private boolean deletable = true;
     private String language;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "website_id")
+    private WebsiteEntity website;
 }

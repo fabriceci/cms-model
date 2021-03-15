@@ -6,6 +6,7 @@ import org.springframework.cache.CacheManager;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -84,7 +85,9 @@ public class CmsUtils {
     }
 
     public static Path getResourceFilePath(String resourceName) throws URISyntaxException {
-        return Paths.get(ClassLoader.getSystemResource(resourceName).toURI());
+        URL systemResource = ClassLoader.getSystemResource(resourceName);
+        if(systemResource== null) throw new RuntimeException("ressource not found : " + resourceName);
+        return Paths.get(systemResource.toURI());
     }
 
     public static String getResourceFileContent(String resourceName) throws IOException, URISyntaxException {

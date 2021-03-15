@@ -31,6 +31,20 @@ public class WebsiteEntity {
     )
     private Set<PageEntity> pages;
 
+    @OneToMany(
+            mappedBy = "website",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private Set<BlockEntity> blocks;
+
+    @OneToMany(
+            mappedBy = "website",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private Set<PageTemplateEntity> templates;
+
     @ManyToMany
     @JoinTable(name = "users_websites",
             joinColumns = @JoinColumn(name = "website_id"),
