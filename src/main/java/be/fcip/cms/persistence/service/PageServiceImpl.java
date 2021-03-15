@@ -242,8 +242,8 @@ public class PageServiceImpl implements IPageService {
     }
 
     @Override
-    public String getNav(Long contentId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot) {
-        return cacheableContentTreeProvider.getMenu(contentId, lang, depth, currentContentId, onlyTitle, rootOffset, limitRoot);
+    public String getNav(Long contentId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId) {
+        return cacheableContentTreeProvider.getMenu(contentId, lang, depth, currentContentId, onlyTitle, rootOffset, limitRoot, websiteId);
     }
 
     public String getBreadcrumb(PageEntity content, String locale, String separator) {

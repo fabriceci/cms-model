@@ -33,13 +33,15 @@ public class CmsContentUtils {
     }
 
     public static String computeSlug(final PageEntity content, final PageContentEntity contentData, final String locale, final PageEntity parent, final boolean forceLang) {
-        if(content == null || contentData == null || StringUtils.isEmpty(contentData.getSlug()) || StringUtils.isEmpty(locale)){
+        WebsiteEntity websiteEntity = ApplicationUtils.websites.get(content.getId());
+        if(websiteEntity==null || content == null || contentData == null || StringUtils.isEmpty(contentData.getSlug()) || StringUtils.isEmpty(locale)){
             throw new IllegalArgumentException("Content, contentData, slug and locale can't be null");
         }
         if(!contentData.getSlug().startsWith("/")){
             contentData.setSlug("/" + contentData.getSlug());
         }
-        String slug = StringUtils.trimToEmpty(computeSlugWithSlashes(content, contentData, locale, parent, forceLang)).replaceAll("/+", "/");
+
+        String slug = StringUtils.trimToEmpty(computeSlugWithSlashes(content, contentData, locale, parent, forceLang, websiteEntity.getSlug())).replaceAll("/+", "/");
         return (slug.length() > 1) ? slug.replaceAll("/+$", "") : slug;
     }
 
@@ -69,23 +71,27 @@ public class CmsContentUtils {
         return contentData.isEnabled();
     }
 
-    public static String computeSlugWithSlashes(final PageEntity content, final PageContentEntity contentData, final String locale, final PageEntity parent, final boolean forceLang) {
-        boolean malFormed = contentData.getSlug().charAt(0) != '/';
-        if(malFormed){
-            log.error("Slug malformed (missing /) : contentData with id : " + contentData.getId());
+    public static String computeSlugWithSlashes(final PageEntity content, final PageContentEntity contentData, final String locale, final PageEntity parent, final boolean forceLang, String websiteSlug) {
+        boolean malFormedSlug = contentData.getSlug().charAt(0) != '/';
+        boolean malFormedWebsite = !StringUtils.isEmpty(websiteSlug) && websiteSlug.charAt(0) != '/';
+        if(malFormedSlug){  log.error("Slug malformed (missing /) : contentData with id : " + contentData.getId()); }
+        if(malFormedWebsite){
+            log.error("Website Slug malformed (missing /) : contentData with id : " + contentData.getId());
+            websiteSlug = "/" + websiteSlug;
         }
-        String slug = malFormed ? '/' + contentData.getSlug() : contentData.getSlug();
+        String slug = malFormedSlug ? '/' + contentData.getSlug() : contentData.getSlug();
+
         if (parent == null) {
             if (forceLang) {
-                return "/" + locale + contentData.getSlug();
+                return websiteSlug + "/" + locale + slug;
             } else {
-                return contentData.getSlug();
+                return websiteSlug + slug;
             }
 
         } else {
             final PageContentEntity parentContentData = parent.getContentMap().get(locale);
 
-            return parentContentData.getComputedSlug() + "/" + contentData.getSlug();
+            return websiteSlug + parentContentData.getComputedSlug() + "/" + contentData.getSlug();
         }
     }
 

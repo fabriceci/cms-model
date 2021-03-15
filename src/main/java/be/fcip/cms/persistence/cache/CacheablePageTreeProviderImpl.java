@@ -78,9 +78,9 @@ public class CacheablePageTreeProviderImpl implements ICacheablePageTreeProvider
 
     @Override
     @Cacheable(value = "pageGlobal")
-    public String getMenu(Long contentId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot) {
+    public String getMenu(Long contentId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId) {
         List<PageEntity> rootsByContentIdCustom = pageRepository.findRootsByContentIdCustom(contentId, lang,
-                true);
+                true, websiteId);
         List<PageEntity> roots = new ArrayList<>();
         int cpt = 0;
         for (PageEntity contentEntity : rootsByContentIdCustom) {

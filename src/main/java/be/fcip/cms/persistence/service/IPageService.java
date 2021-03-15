@@ -30,7 +30,7 @@ public interface IPageService {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN_CMS_DELETE', 'ROLE_ADMIN_WEBCONTENT_DELETE')")
     void deleteContentData(Long id) throws Exception;
 
-    String getNav(Long contentId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot);
+    String getNav(Long contentId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId);
 
     String getBreadcrumb(PageEntity content, String locale, String seperator, Long parendId, boolean h1);
 

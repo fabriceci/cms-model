@@ -9,7 +9,7 @@ import java.util.List;
 public interface ICacheablePageTreeProvider {
     List<TreeItem> getTreeItems(Long websiteId);
 
-    String getMenu(Long contentId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot);
+    String getMenu(Long contentId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId);
 
     String getPagesTree(String lang, String type, Long website);
 

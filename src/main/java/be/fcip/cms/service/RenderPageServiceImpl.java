@@ -21,6 +21,8 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -51,9 +53,11 @@ public class RenderPageServiceImpl implements IRenderPageService {
 
         Locale locale = LocaleContextHolder.getLocale();
         if(content == null) throw new IllegalArgumentException();
-        if(!ApplicationUtils.websites.containsKey(content.getWebsite().getId()));
+        if(!ApplicationUtils.websites.containsKey(content.getWebsite().getId())) throw new IllegalArgumentException();
         if(CmsSecurityUtils.uriIsAdmin(request))  throw new ResourceNotFoundException();
-
+        WebsiteEntity websiteEntity = ApplicationUtils.websites.get(content.getWebsite().getId());
+        RequestContextHolder.getRequestAttributes().setAttribute("websiteId", websiteEntity.getId(), RequestAttributes.SCOPE_REQUEST);
+        model.put("websiteId", websiteEntity.getId());
         if(appParamService.isMaintenance()){
             model.put("maintenance", true);
         }

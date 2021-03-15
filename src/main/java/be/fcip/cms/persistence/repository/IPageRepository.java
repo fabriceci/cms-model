@@ -12,7 +12,7 @@ import java.util.Set;
 public interface IPageRepository extends JpaRepository<PageEntity, Long>, QuerydslPredicateExecutor<PageEntity>, IPageRepositoryCustom {
 
     @Query("SELECT p from PageEntity p LEFT JOIN FETCH p.pageChildren LEFT JOIN FETCH p.pageParent WHERE p.pageType like 'PAGE%' AND p.website.id = :websiteId ORDER BY p.position")
-    Set<PageEntity> findAllPages(@Param("id") Long websiteId);
+    Set<PageEntity> findAllPages(Long websiteId);
 
     @Query("SELECT p from PageEntity p WHERE p.template.id = :id")
     Set<PageEntity> findAllPagesByTemplate(@Param("id") Long id);

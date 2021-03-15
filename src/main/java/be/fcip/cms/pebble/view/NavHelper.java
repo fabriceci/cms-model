@@ -7,6 +7,8 @@ import be.fcip.cms.util.CmsTypeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +34,7 @@ public class NavHelper {
         return getNavMenu(new HashMap<>());
     }
     public String getNavMenu(Map<Object, Object> params){
+
         Long contentId = CmsTypeUtils.toLong(params.get("contentId"));
         String locale =  CmsTypeUtils.localeToString(params.get("locale")).toString();
         Long depth = CmsTypeUtils.toLong(params.get("depth"));
@@ -39,6 +42,10 @@ public class NavHelper {
         Boolean onlyTitle =  CmsTypeUtils.toBoolean(params.get("contentId"), false);
         Integer offsetRoots =  CmsTypeUtils.toInteger(params.get("offsetRoots"));
         Integer limitRoots = CmsTypeUtils.toInteger(params.get("limitRoots"));
-        return contentService.getNav(contentId, locale, depth, currentId, onlyTitle, offsetRoots, limitRoots);
+        Long websiteId =  CmsTypeUtils.toLong(params.get("websiteId"));
+        if(websiteId == null){
+            websiteId = (Long)RequestContextHolder.currentRequestAttributes().getAttribute("websiteId", RequestAttributes.SCOPE_REQUEST);
+        }
+        return contentService.getNav(contentId, locale, depth, currentId, onlyTitle, offsetRoots, limitRoots, websiteId);
     }
 }
