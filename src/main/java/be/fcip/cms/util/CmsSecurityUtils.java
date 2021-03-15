@@ -25,12 +25,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CmsSecurityUtils {
 
-    public static List<GrantedAuthority> fullPrivilegeList;
-
-    public static void setFullPrivilegeList(List<GrantedAuthority> list) {
-        fullPrivilegeList = list;
-    }
-
     public static UserEntity getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserEntity custom = null;

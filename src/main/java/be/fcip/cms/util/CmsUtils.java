@@ -2,11 +2,14 @@ package be.fcip.cms.util;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.cache.CacheManager;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,22 +23,22 @@ public class CmsUtils {
     public final static String DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
     public final static String DATE_FORMAT = "yyyy-MM-dd";
 
-    public final static String CONTENT_TYPE_PAGE = "Page";
-    public final static String CONTENT_TYPE_PAGE_LINK = "Link";
-    public final static String CONTENT_TYPE_NEWS = "News";
-    public final static String CONTENT_TYPE_ARTICLE = "Article";
+    public final static String CONTENT_TYPE_PAGE = "PAGE";
+    public final static String CONTENT_TYPE_PAGE_LINK = "LINK";
+    public final static String CONTENT_TYPE_NEWS = "NEWS";
+    public final static String CONTENT_TYPE_ARTICLE = "ARTICLE";
 
-    public final static String BLOCK_TYPE_CONTENT = "Page";
-    public final static String BLOCK_TYPE_NAVIGATION = "Navigation";
-    public final static String BLOCK_TYPE_CONTENT_TEMPLATE = "Template";
-    public final static String BLOCK_TYPE_SYSTEM = "System";
-    public final static String BLOCK_TYPE_FIELDSET = "Field";
+    public final static String BLOCK_TYPE_CONTENT = "PAGE";
+    public final static String BLOCK_TYPE_NAVIGATION = "NAV";
+    public final static String BLOCK_TYPE_CONTENT_TEMPLATE = "TEMPLATE";
+    public final static String BLOCK_TYPE_SYSTEM = "SYSTEM";
+    public final static String BLOCK_TYPE_FIELDSET = "FIELD";
 
     public final static String BLOCK_TEMPLATE_BASIC_PAGE_NAME = "Template base";
     public final static String BLOCK_TEMPLATE_WEBCONTENT_NAME = "Template webcontent";
+    public final static String BLOCK_TEMPLATE_LOGIN_NAME = "Login Page";
 
     public final static String BLOCK_PAGE_MASTER_NAME = "Default Master Layout";
-    public final static String BLOCK_PAGE_LOGIN_NAME = "Login Page";
     public final static String BLOCK_PAGE_ERROR_NAME = "Error Page (general)";
     public final static String BLOCK_PAGE_ERROR404_NAME = "Error page (404)";
     public final static String BLOCK_PAGE_MAINTENANCE_NAME = "Maintenance Page";
@@ -84,14 +87,12 @@ public class CmsUtils {
         return sb.toString();
     }
 
-    public static Path getResourceFilePath(String resourceName) throws URISyntaxException {
-        URL systemResource = ClassLoader.getSystemResource(resourceName);
-        if(systemResource== null) throw new RuntimeException("ressource not found : " + resourceName);
-        return Paths.get(systemResource.toURI());
-    }
-
     public static String getResourceFileContent(String resourceName) throws IOException, URISyntaxException {
-        return new String(Files.readAllBytes(getResourceFilePath(resourceName)));
+        InputStream resourceStream = CmsUtils.class.getResourceAsStream(resourceName);
+        if(resourceStream == null) throw new RuntimeException("ressource not found: " + resourceName);
+        String result = IOUtils.toString(resourceStream, StandardCharsets.UTF_8.name());
+        resourceStream.close();
+        return result;
     }
 
     public static void clearCaches(CacheManager cacheManager){

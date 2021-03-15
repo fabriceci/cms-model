@@ -51,6 +51,7 @@ public class RenderPageServiceImpl implements IRenderPageService {
 
         Locale locale = LocaleContextHolder.getLocale();
         if(content == null) throw new IllegalArgumentException();
+        if(!ApplicationUtils.websites.containsKey(content.getWebsite().getId()));
         if(CmsSecurityUtils.uriIsAdmin(request))  throw new ResourceNotFoundException();
 
         if(appParamService.isMaintenance()){
@@ -126,7 +127,7 @@ public class RenderPageServiceImpl implements IRenderPageService {
 
         // Pas grave pour les perfs car les blocks seront dans le cache
         BlockEntity master = null;
-        master = blockService.findByName(CmsUtils.BLOCK_PAGE_MASTER_NAME);
+        master = blockService.find(ApplicationUtils.websites.get(content.getWebsite().getId()).getMaster().getId());
 
         model.put("main",  peebleService.parseBlock(contentTemplateDto.getBlock(), model));
 

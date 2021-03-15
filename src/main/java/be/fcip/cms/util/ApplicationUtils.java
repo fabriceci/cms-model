@@ -1,19 +1,18 @@
 package be.fcip.cms.util;
 
+import be.fcip.cms.persistence.model.WebsiteEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,6 +26,9 @@ public class ApplicationUtils {
     public static boolean isDev;
     public static boolean forceLangInUrl;
     public static boolean publicMember;
+
+    public static List<GrantedAuthority> rolesList;
+    public static Map<Long, WebsiteEntity> websites;
 
     static{
         // Load Properties

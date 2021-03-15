@@ -1,6 +1,7 @@
 package be.fcip.cms.persistence.model;
 
 import be.fcip.cms.persistence.converter.UserGenderConverter;
+import be.fcip.cms.util.ApplicationUtils;
 import be.fcip.cms.util.CmsSecurityUtils;
 import be.fcip.cms.util.CmsUtils;
 import lombok.*;
@@ -67,9 +68,8 @@ public class UserEntity extends AbstractTimestampEntity implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         boolean isSuperAdmin = CmsSecurityUtils.hasGroup(this, CmsUtils.GROUP_SUPER_ADMIN);
-        return isSuperAdmin ? CmsSecurityUtils.fullPrivilegeList : getGrantedAuthorities(getPrivileges(groups));
+        return isSuperAdmin ? ApplicationUtils.rolesList : getGrantedAuthorities(getPrivileges(groups));
     }
-
 
     public Set<GrantedAuthority> getGrantedAuthorities(){
         Collection<GroupEntity> privileges = this.getGroups();

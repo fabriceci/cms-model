@@ -9,8 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Entity
-@Table(name = "word", indexes = {
-        @Index(columnList = "wordKey", unique = true)})
+@Table(name = "word", indexes = @Index(columnList = "wordKey", unique = true))
 @Getter
 @Setter
 @EqualsAndHashCode(of = {"id", "wordKey"})
