@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service(value = "websiteService")
@@ -29,6 +30,11 @@ public class WebsiteServiceImpl implements IWebsiteService{
     @Override
     public List<WebsiteEntity> findAll() {
         return websiteRepository.findAll();
+    }
+
+    @Override
+    public Optional<WebsiteEntity> findById(Long id) {
+        return websiteRepository.findById(id);
     }
 
     @Override

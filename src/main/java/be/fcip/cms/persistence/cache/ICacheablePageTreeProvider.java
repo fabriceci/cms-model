@@ -11,7 +11,7 @@ public interface ICacheablePageTreeProvider {
 
     String getMenu(Long contentId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot);
 
-    String getPagesTree(String lang, String type);
+    String getPagesTree(String lang, String type, Long website);
 
     String getBreadcrumb(PageEntity content, String locale, String separator, Long parendId, boolean h1);
 }

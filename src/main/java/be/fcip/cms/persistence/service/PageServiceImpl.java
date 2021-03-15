@@ -331,8 +331,8 @@ public class PageServiceImpl implements IPageService {
     }
 
     @Override
-    public String getPagesTree(String lang, String type) {
-        return cacheableContentTreeProvider.getPagesTree(lang, type);
+    public String getPagesTree(String lang, String type, Long websiteId) {
+        return cacheableContentTreeProvider.getPagesTree(lang, type, websiteId);
     }
 
     @Override

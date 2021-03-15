@@ -45,8 +45,8 @@ public class CacheablePageTreeProviderImpl implements ICacheablePageTreeProvider
 
 
         // Use first level cache to do all the tree in only 2 requests
-        Set<PageEntity> pages = pageRepository.findAllPages(); // force first level cache
-        List<PageEntity> roots = pageRepository.findByPageParentIsNullOrderByPositionAsc();
+        Set<PageEntity> pages = pageRepository.findAllPages(websiteId); // force first level cache
+        List<PageEntity> roots = pageRepository.findByPageParentIsNullOrderAndWebsiteIdByPositionAsc(websiteId);
 
         List<TreeItem> result = new ArrayList<>();
         convertList(result, roots);
@@ -105,11 +105,11 @@ public class CacheablePageTreeProviderImpl implements ICacheablePageTreeProvider
 
     @Override
     @Cacheable(value = "pageGlobal")
-    public String getPagesTree(String lang, String type) {
+    public String getPagesTree(String lang, String type, Long websiteId) {
 
         // Use first level cache to do all the tree in only 2 requests
-        Set<PageEntity> pages = pageRepository.findAllPages(); // force first level cache
-        List<PageEntity> roots = pageRepository.findByPageParentIsNullOrderByPositionAsc();
+        Set<PageEntity> pages = pageRepository.findAllPages(websiteId); // force first level cache
+        List<PageEntity> roots = pageRepository.findByPageParentIsNullOrderAndWebsiteIdByPositionAsc(websiteId);
 
         // List<PageEntity> roots =
         // contentRepository.findRootsByContentIdCustom(null, lang, false);

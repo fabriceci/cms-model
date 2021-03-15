@@ -26,6 +26,8 @@ public class WebsiteEntity {
 
     private String baseUrl;
 
+    private String image;
+
     @OneToOne(targetEntity = BlockEntity.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private BlockEntity master;
 

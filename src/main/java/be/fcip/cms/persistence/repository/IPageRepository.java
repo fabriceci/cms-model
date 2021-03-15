@@ -11,8 +11,8 @@ import java.util.Set;
 
 public interface IPageRepository extends JpaRepository<PageEntity, Long>, QuerydslPredicateExecutor<PageEntity>, IPageRepositoryCustom {
 
-    @Query("SELECT p from PageEntity p LEFT JOIN FETCH p.pageChildren LEFT JOIN FETCH p.pageParent WHERE p.pageType like 'PAGE%' ORDER BY p.position")
-    Set<PageEntity> findAllPages();
+    @Query("SELECT p from PageEntity p LEFT JOIN FETCH p.pageChildren LEFT JOIN FETCH p.pageParent WHERE p.pageType like 'PAGE%' AND p.website.id = :websiteId ORDER BY p.position")
+    Set<PageEntity> findAllPages(@Param("id") Long websiteId);
 
     @Query("SELECT p from PageEntity p WHERE p.template.id = :id")
     Set<PageEntity> findAllPagesByTemplate(@Param("id") Long id);
@@ -20,8 +20,8 @@ public interface IPageRepository extends JpaRepository<PageEntity, Long>, Queryd
     @Query("SELECT p from PageEntity p LEFT JOIN FETCH p.template WHERE p.template.dynamicUrl = true")
     Set<PageEntity> findAllDynamicUrlPages();
 
-    @Query("SELECT DISTINCT p from PageEntity p LEFT JOIN FETCH p.pageChildren WHERE p.pageType like 'PAGE%' and p.pageParent IS NULL ORDER BY p.position")
-    List<PageEntity> findByPageParentIsNullOrderByPositionAsc();
+    @Query("SELECT DISTINCT p from PageEntity p LEFT JOIN FETCH p.pageChildren WHERE p.pageType like 'PAGE%' and p.pageParent IS NULL and p.website.id = :websiteId ORDER BY p.position")
+    List<PageEntity> findByPageParentIsNullOrderAndWebsiteIdByPositionAsc(Long websiteId);
 
     List<PageEntity> findByPageParentIdOrderByPositionAsc(long id);
 

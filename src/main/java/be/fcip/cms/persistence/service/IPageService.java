@@ -34,7 +34,7 @@ public interface IPageService {
 
     String getBreadcrumb(PageEntity content, String locale, String seperator, Long parendId, boolean h1);
 
-    String getPagesTree(String lang, String type);
+    String getPagesTree(String lang, String type, Long websiteId);
 
     PageEntity findContent(Long id);
 
