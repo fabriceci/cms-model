@@ -71,13 +71,6 @@ public class PageServiceImpl implements IPageService {
         return cacheableContentProvider.findContent(contentId);
     }
 
-    // Find Entity (Save/Update/Delete)
-    @Override
-    public PageEntity findPageEntity(Long id) {
-        PageEntity one = pageRepository.findOne(id);
-        Hibernate.initialize(one.getContentMap());
-        return one;
-    }
 
     @Override
     public PageContentEntity findPageContentEntity(Long id) {

@@ -78,9 +78,9 @@ public class RenderPageServiceImpl implements IRenderPageService {
         Cache.ValueWrapper cacheWrapper = null;
         // TO DO : testé si on est en dev!
         String cacheKey = content.getId() + "_" + locale.toString();
-        if((currentUser == null) && contentTemplateDto.isFullCache()){
+        if((currentUser == null) && contentTemplateDto.isFullCache() && !ApplicationUtils.isDev){
             cacheWrapper = cacheManager.getCache("pageFull").get(cacheKey);
-        } else if((currentUser == null) && contentTemplateDto.isShortCache()){
+        } else if((currentUser == null) && contentTemplateDto.isShortCache() && !ApplicationUtils.isDev){
             cacheWrapper = cacheManager.getCache("pageShort").get(cacheKey);
         }
         if(cacheWrapper != null && cacheWrapper.get() != null){
@@ -160,9 +160,9 @@ public class RenderPageServiceImpl implements IRenderPageService {
         }
 
         final String result = peebleService.parseBlock(master, model);
-        if((currentUser == null) && contentTemplateDto.isFullCache()){
+        if((currentUser == null) && contentTemplateDto.isFullCache() && !ApplicationUtils.isDev){
             cacheManager.getCache("pageFull").put(cacheKey, result);
-        } else if((currentUser == null) && contentTemplateDto.isShortCache()){
+        } else if((currentUser == null) && contentTemplateDto.isShortCache() && !ApplicationUtils.isDev){
             cacheManager.getCache("pageShort").put(cacheKey, result);
         }
         return result;

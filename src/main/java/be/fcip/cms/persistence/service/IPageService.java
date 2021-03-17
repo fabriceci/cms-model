@@ -38,8 +38,6 @@ public interface IPageService {
 
     PageEntity findContent(Long id);
 
-    PageEntity findPageEntity(Long id);
-
     PageContentEntity findPageContentEntity(Long id);
 
     boolean contentCanBeDeleted(PageEntity content, String contentDataLocale);

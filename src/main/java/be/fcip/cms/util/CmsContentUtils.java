@@ -33,7 +33,7 @@ public class CmsContentUtils {
     }
 
     public static String computeSlug(final PageEntity content, final PageContentEntity contentData, final String locale, final PageEntity parent, final boolean forceLang) {
-        WebsiteEntity websiteEntity = ApplicationUtils.websites.get(content.getId());
+        WebsiteEntity websiteEntity = ApplicationUtils.websites.get(content.getWebsite().getId());
         if(websiteEntity==null || content == null || contentData == null || StringUtils.isEmpty(contentData.getSlug()) || StringUtils.isEmpty(locale)){
             throw new IllegalArgumentException("Content, contentData, slug and locale can't be null");
         }

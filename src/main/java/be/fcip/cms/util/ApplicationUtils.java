@@ -4,9 +4,11 @@ import be.fcip.cms.persistence.model.WebsiteEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpRequest;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.GrantedAuthority;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -83,5 +85,33 @@ public class ApplicationUtils {
     public static Locale getAdminLocale(){
         Locale locale = LocaleContextHolder.getLocale();
         return adminLocales.contains(locale) ? locale : defaultAdminLocale;
+    }
+
+    public static WebsiteEntity getWebsiteFromUrl(HttpServletRequest request){
+        return getWebsiteFromUrl(request.getRequestURI());
+    }
+
+    public static WebsiteEntity getWebsiteFromUrl(String path){
+        int cpt = 0;
+        for (WebsiteEntity website : ApplicationUtils.websites.values()) {
+            if (cpt == 0) {
+                cpt++; // skip first
+                continue;
+            }
+            if(ApplicationUtils.forceLangInUrl){
+                for (Locale siteLocale : ApplicationUtils.locales) {
+                    if (path.startsWith("/" + siteLocale + website.getSlug())) {
+                        return website;
+                    }
+                }
+
+            } else {
+                if (path.startsWith(website.getSlug())) {
+                    return website;
+                }
+            }
+
+        }
+        return websites.get(1L);
     }
 }

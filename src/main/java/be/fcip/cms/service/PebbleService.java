@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -32,6 +33,11 @@ public class PebbleService implements IPeebleService {
     private List<IModelExtension> modelExtensionList;
     @Autowired
     private IPebbleServiceCacheProvider cacheProvider;
+
+    @PostConstruct
+    public void init(){
+        modelExtensionList.sort((o1, o2) -> o2.getPriority() - o1.getPriority());
+    }
 
     @Override
     public String parseString(String data, Map<String, Object> model)  throws IOException, PebbleException{
@@ -60,8 +66,6 @@ public class PebbleService implements IPeebleService {
 
     @Override
     public void fillModelMap(Map<String, Object> model, HttpServletRequest request) {
-
-        modelExtensionList.sort((o1, o2) -> o2.getPriority() - o1.getPriority());
 
         boolean isAdmin = request.getRequestURI().startsWith("/admin/");
         for (IModelExtension modelExtension : modelExtensionList) {
