@@ -75,6 +75,7 @@ public class CmsUtils {
     public final static long TEMPLATE_LINK_ID = 4;
 
     public static Long CMS_UNIQUE_NUMBER = new Date().getTime();
+    public static Long CMS_MINIFY_NUMBER = null;
 
     public static String alert(@NonNull String type, @NonNull String message, String title) {
         StringBuilder sb = new StringBuilder();
