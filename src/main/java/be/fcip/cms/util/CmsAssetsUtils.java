@@ -9,8 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -64,6 +62,44 @@ public class CmsAssetsUtils {
         return WebConfigConstants.RESOURCES_LOCATION + name;
     }
 
+    public static class ValidationException extends Exception{
+        public ValidationException(final String message) {
+            super(message);
+        }
+    }
+    public static void validate(Path path) throws ValidationException{
+        String extension = FilenameUtils.getExtension(path.getFileName().toString());
+        switch (extension){
+            case "scss":
+            case "css":
+                // check if shell command is present
+                if(CmsCommandUtils.exec("command", Arrays.asList("-v", "sass")).isSuccess()){
+                    CmsCommandUtils.CommandResponse sass = CmsCommandUtils.exec("sass", Arrays.asList("--no-source-map", path.toFile().getAbsolutePath()));
+                    if(sass.hasError()){
+                        throw new ValidationException(sass.getOutput());
+                    }
+                } else{
+                    log.warn("Unable to make validation for (s)css, sass command not found");
+                }
+                break;
+
+            case "js":
+                if(CmsCommandUtils.exec("command", Arrays.asList("-v", "node")).isSuccess()){
+                    CmsCommandUtils.CommandResponse node = CmsCommandUtils.exec("node", Arrays.asList("--check", path.toFile().getAbsolutePath()));
+                    if(node.hasError()){
+                        throw new ValidationException(node.getOutput());
+                    }
+                } else{
+                    log.warn("Unable to make validation, node command not found");
+                }
+                break;
+
+            default:
+                log.warn("No validator for type : " + extension);
+        }
+
+    }
+
     public static void setupMinify() {
         try {
             Path path = Paths.get(CmsAssetsUtils.ASSETS_PATH.substring(1) + "min");
@@ -114,27 +150,59 @@ public class CmsAssetsUtils {
         CmsUtils.CMS_MINIFY_NUMBER = new Date().getTime();
     }
 
-    public static void minify(String name, List<String> fileList){
+    public static void minify(String name, List<String> filesParams){
 
-        if(fileList == null || fileList.isEmpty()){
+        if(filesParams == null || filesParams.isEmpty()){
             throw new RuntimeException("FileList is empty");
         }
-
+        List<String> files = new ArrayList<>(filesParams); // prevent UnsupportedOperationException from list created by Arrays.asList():
         String extension = null;
-        // check if files exist
-        for (String s : fileList) {
+        boolean hasScss = false;
+        List<String> scssFiles = null;
+        // check if files exist & scss
+        for (String s : files) {
+            String fileExt = FilenameUtils.getExtension(s);
             if(extension == null){
                 extension = FilenameUtils.getExtension(s);
-                if(!Arrays.asList("css", "js").contains(extension)){
+                if(extension.equals("scss")){
+                    extension = "css";
+                }
+                if(!Arrays.asList("css", "js", "scss").contains(extension)){
                     throw new RuntimeException("Only css/js file are allowed");
                 }
             } else {
-                if(!extension.equals(FilenameUtils.getExtension(s))){
-                    throw new RuntimeException(String.format("Extension of files list have to be the same (%s,%s)", extension, FilenameUtils.getExtension(s)));
+                if(extension.equals("js") && !extension.equals(fileExt)){
+                    throw new RuntimeException(String.format("Extension of files list have to be the same (%s,%s)", extension, fileExt));
+                } else if(!Arrays.asList("scss", "css").contains(fileExt)){
+                    throw new RuntimeException(String.format("Extension of files list have to be the same (%s,%s)", extension, fileExt));
                 }
             }
             if(!Paths.get(s).toFile().exists()){
                 throw new RuntimeException(String.format("File '%s' not exist", s));
+            }
+
+            // handle scss
+            if(fileExt.equals("scss")){
+                if(scssFiles == null) scssFiles = new ArrayList<>();
+                scssFiles.add(s);
+                hasScss = true;
+                continue;
+            }
+
+            files.add(s);
+        }
+
+        if(hasScss){
+            // check if shell command is present
+            if(CmsCommandUtils.exec("command", Arrays.asList("-v", "sass")).code != 0){
+                throw new RuntimeException("command not found: sass");
+            }
+            for (String scssFile : scssFiles) {
+                String output = FilenameUtils.getFullPath(scssFile) + "compiled/" + FilenameUtils.getBaseName(scssFile) + ".css";
+                if (CmsCommandUtils.exec("sass", Arrays.asList("--no-source-map", scssFile, output)).hasError()) {
+                    throw new RuntimeException("error during exec of command sass");
+                }
+                files.add(output);
             }
         }
 
@@ -144,61 +212,20 @@ public class CmsAssetsUtils {
 
 
         // check if shell command is present
-        if(runProcess("command", Arrays.asList("-v", "minify"), null) != 0){
+        if(CmsCommandUtils.exec("command", Arrays.asList("-v", "minify")).hasError()){
             throw new RuntimeException("command not found: minify");
         }
 
-        if(runProcess("minify", fileList, new File(filePath)) != 0){
+        if(CmsCommandUtils.exec("minify", files, new File(filePath)).hasError()){
             throw new RuntimeException("error during exec of command minify");
         }
-        if(extension.equals("css")) {
-            if(runProcess("command", Arrays.asList("-v","postcss"), null) != 0){
+        if(extension != null && extension.equals("css")) {
+            if(CmsCommandUtils.exec("command", Arrays.asList("-v","postcss")).hasError()){
                 throw new RuntimeException("command not found: postcss");
             }
-            if (runProcess("postcss", Arrays.asList(filePath, "--use", "autoprefixer", "cssnano", "-r", "--no-map"), null) != 0) {
-                throw new RuntimeException("rror during exec of command postcss");
+            if (CmsCommandUtils.exec("postcss", Arrays.asList(filePath, "--use", "autoprefixer", "cssnano", "-r", "--no-map"), null).code != 0) {
+                throw new RuntimeException("error during exec of command postcss");
             }
         }
-    }
-
-
-    private static int runProcess(String command, List<String> args, File output) {
-        List<String> commandList = new ArrayList<>();
-        commandList.add(command);
-        if(args != null) {
-            commandList.addAll(args);
-        }
-        ProcessBuilder builder = new ProcessBuilder(commandList);
-        if(output != null) {
-            builder.redirectOutput(output);
-        }
-        try {
-            return builder.start().waitFor();
-        } catch (IOException | InterruptedException e) {
-            log.error("Error executing command : " + command, e);
-        }
-        return -1;
-    }
-    private static int runProcess(String command){
-        try {
-            Process process = Runtime.getRuntime().exec(command);
-
-            StringBuilder output = new StringBuilder();
-
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                output.append(line).append("\n");
-            }
-
-            int i = process.waitFor();
-            if(i != 0){
-                log.error("Error executing command " + command + ": \n: " + output.toString() );
-            }
-            return i;
-        } catch(Exception e){log.error("Error executing command : " + command, e); }
-        return -1;
     }
 }
