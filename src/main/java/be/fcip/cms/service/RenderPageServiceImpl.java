@@ -9,7 +9,6 @@ import be.fcip.cms.persistence.service.IPageTemplateService;
 import be.fcip.cms.util.ApplicationUtils;
 import be.fcip.cms.util.CmsContentUtils;
 import be.fcip.cms.util.CmsSecurityUtils;
-import be.fcip.cms.util.CmsUtils;
 import com.mitchellbosecke.pebble.error.PebbleException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,7 +130,7 @@ public class RenderPageServiceImpl implements IRenderPageService {
 
         // Pas grave pour les perfs car les blocks seront dans le cache
         BlockEntity master = null;
-        master = blockService.find(ApplicationUtils.websites.get(content.getWebsite().getId()).getMaster().getId());
+        master = blockService.findWithCache(ApplicationUtils.websites.get(content.getWebsite().getId()).getMaster().getId());
 
         model.put("main",  peebleService.parseBlock(contentTemplateDto.getBlock(), model));
 

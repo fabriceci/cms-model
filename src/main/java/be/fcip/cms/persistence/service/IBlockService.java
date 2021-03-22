@@ -7,9 +7,10 @@ import java.util.List;
 
 public interface IBlockService {
 
-    BlockEntity find(Long id);
+    BlockEntity findWithoutCache(Long id);
+    BlockEntity findWithCache(Long id);
 
-    BlockEntity findByName(String name);
+    BlockEntity findByNameWithCache(String name);
 
     List<BlockEntity> findAll();
 

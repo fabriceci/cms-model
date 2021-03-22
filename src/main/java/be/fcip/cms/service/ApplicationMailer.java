@@ -30,7 +30,7 @@ public class ApplicationMailer implements IMailer {
      * */
     public void sendMail(String to, String subject, String body) throws MessagingException, UnsupportedEncodingException {
 
-        BlockEntity signature_email = blockService.findByName("EMAIL_SIGNATURE");
+        BlockEntity signature_email = blockService.findByNameWithCache("EMAIL_SIGNATURE");
         if (signature_email != null) {
             body += "<br>" + signature_email.getContent();
         }

@@ -44,7 +44,7 @@ dependencies {
     api 'org.springframework.boot:spring-boot-starter-mail'
 
     // cache
-    api 'org.cache2k:cache2k-spring:1.6.0.Final'
+    api 'org.cache2k:cache2k-spring:2.0.0.Final'
 
     // database
     api 'org.springframework.data:spring-data-envers'
@@ -70,6 +70,8 @@ dependencies {
     // API
     api 'javax.validation:validation-api:2.0.1.Final'
     api 'javax.json:javax.json-api:1.1.4'
+
+    api 'de.cronn:reflection-util:2.10.0'
 
     // Processor
     annotationProcessor 'org.springframework.boot:spring-boot-starter-data-jpa' // For javax/persistence/Entity

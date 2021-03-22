@@ -30,7 +30,7 @@ public class BlockHelper {
 
     public String getBlock(Long id, Map<String, Object> model) throws IOException {
         model = fillMap(model);
-        BlockEntity blockEntity = blockService.find(id);
+        BlockEntity blockEntity = blockService.findWithCache(id);
         if (blockEntity == null) return null;
         return blockEntity.isDynamic() ? peebleService.parseBlock(blockEntity, model) : blockEntity.getContent();
     }
@@ -41,7 +41,7 @@ public class BlockHelper {
 
     public String getBlockByName(String name, Map<String, Object> model) throws IOException {
         model = fillMap(model);
-        BlockEntity blockEntity = blockService.findByName(name);
+        BlockEntity blockEntity = blockService.findByNameWithCache(name);
         if (blockEntity == null) return null;
         return blockEntity.isDynamic() ? peebleService.parseBlock(blockEntity, model) : blockEntity.getContent();
     }

@@ -39,8 +39,18 @@ public class BlockServiceImpl implements IBlockService {
     private CacheManager cacheManager;
 
     @Override
-    public BlockEntity find(Long id) {
+    public BlockEntity findWithoutCache(Long id) {
+        return blockRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public BlockEntity findWithCache(Long id) {
         return cacheableBlockProvider.find(id);
+    }
+
+    @Override
+    public BlockEntity findByNameWithCache(String name) {
+        return cacheableBlockProvider.findByName(name);
     }
 
     @Override
@@ -48,15 +58,13 @@ public class BlockServiceImpl implements IBlockService {
         return blockRepository.findAll();
     }
 
-    @Override
-    public BlockEntity findByName(String name) {
-        return cacheableBlockProvider.findByName(name);
-    }
 
     @Override
     @Caching(evict = {
             @CacheEvict(value = "block", key = "#id"),
-            @CacheEvict(value = "block", key = "'compiled_block_' + #id")
+            @CacheEvict(value = "block", key = "'compiled_block_' + #id"),
+            @CacheEvict(value= "pageFull", allEntries = true),
+            @CacheEvict(value = "pageShort", allEntries = true)
     })
     public void delete(Long id) throws Exception {
         Optional<BlockEntity> block = blockRepository.findById(id);
@@ -74,7 +82,9 @@ public class BlockServiceImpl implements IBlockService {
     @Override
     @Caching(evict = {
             @CacheEvict(value = "block", key = "#block.id"),
-            @CacheEvict(value = "block", key = "'compiled_block_' + #block.id")
+            @CacheEvict(value = "block", key = "'compiled_block_' + #block.id"),
+            @CacheEvict(value= "pageFull", allEntries = true),
+            @CacheEvict(value = "pageShort", allEntries = true)
     })
     public BlockEntity save(BlockEntity block) {
         cleanCache(block);
@@ -102,8 +112,8 @@ public class BlockServiceImpl implements IBlockService {
             // suppress block by name
             Cache cacheBlock = cacheManager.getCache("block");
             cacheBlock.evict(block.getName());
+            cacheBlock.evict("compiled_block_" + block.getId());
         }
-
     }
 
     @Override
