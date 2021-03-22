@@ -37,7 +37,7 @@ public interface IUserService extends UserDetailsService {
 
     void createPasswordResetTokenForUser(UserEntity user, String token);
 
-    UserEntity findByUsernameOrEmail(String email);
+    UserEntity findByUsernameOrEmailCached(String email);
 
     PasswordResetTokenEntity getPasswordResetToken(String token);
 

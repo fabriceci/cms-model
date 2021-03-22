@@ -13,8 +13,8 @@ import java.util.Collection;
 @Component
 @Slf4j
 public class SecurityHelper {
-    @Autowired
-    private IPageService contentService;
+
+    @Autowired private IPageService contentService;
 
     public boolean hasRole(String role){
         return CmsSecurityUtils.hasRole(role);
@@ -45,7 +45,7 @@ public class SecurityHelper {
     }
 
     public boolean userHasRole(PageEntity content){
-        return CmsSecurityUtils.hasRoles(contentService.getRoleForContent(content));
+        return CmsSecurityUtils.hasRoles(contentService.getRoleForPage(content));
     }
 
 

@@ -19,10 +19,8 @@ import java.util.stream.Collectors;
 @Transactional
 public class AppParamServiceImpl implements IAppParamService {
 
-    @Autowired
-    private IAppParamRepository appParamRepository;
-    @Autowired
-    private ICacheableAppParamsProvider cache;
+    @Autowired private IAppParamRepository appParamRepository;
+    @Autowired private ICacheableAppParamsProvider cache;
 
     @Override
     public Optional<AppParamEntity> findOne(String id) {
@@ -75,12 +73,10 @@ public class AppParamServiceImpl implements IAppParamService {
         return getParamsCached().get(id);
     }
 
-    @Override
-    public String getParam(String id, String langId) {
-        Map<String, String> paramsMap = getParamsCached();
+    public static String getParam(String id, String langId, Map<String, String> paramsMap){
         String result = null;
         // Try to find a translated params (title is already translated)
-        if(ApplicationUtils.locales.size() > 1 && !id.equals("title")){
+        if(ApplicationUtils.locales.size() > 1){
             result = paramsMap.get(id + "_" + langId);
         }
         // Try default
@@ -91,54 +87,13 @@ public class AppParamServiceImpl implements IAppParamService {
     }
 
     @Override
-    public boolean isMaintenance() {
-        return getParam("maintenance").equals("true");
-    }
-
-    @Override
-    @CacheEvict(value = "global", key= "'appParams'")
-    public void setMaintenance(boolean value) {
-        Optional<AppParamEntity> maintenance = findOne("maintenance");
-        maintenance.ifPresent((m) -> {
-            m.setValue(String.valueOf(value));
-            appParamRepository.save(m);
-        });
-    }
-
-    @Override
-    public List<String> getContactEmails() {
-        String[] split = getParam(IAppParamService.PARAM_EMAIL_CONTACT).split(";");
-        return Arrays.stream(split).collect(Collectors.toList());
+    public String getParam(String id, String langId) {
+        return getParam(id, langId, getParamsCached());
     }
 
     @Override
     public List<String> getDevEmails() {
         String[] split = getParam(IAppParamService.PARAM_EMAIL_DEV).split(";");
         return Arrays.stream(split).collect(Collectors.toList());
-    }
-
-    public static Pattern PROCESS_REGEX_PATTERN = Pattern.compile("\\[([a-zA-Z]+)\\]");
-    /**
-     * Replace the token [xxx] by the param xxx in the map
-     * @param template
-     * @param lang
-     * @return
-     */
-    @Override
-    public String replaceTokenByParam(String template, String lang){
-        Matcher matcher = PROCESS_REGEX_PATTERN.matcher(template);
-        int count = 0;
-        StringBuffer sb = null;
-        while(matcher.find()) {
-            count++;
-            if(sb == null) sb = new StringBuffer();
-            matcher.appendReplacement(sb, getParam(matcher.group(1), lang));
-        }
-        if(count == 0){
-            return template;
-        } else {
-            matcher.appendTail(sb);
-            return sb.toString();
-        }
     }
 }

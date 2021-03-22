@@ -14,9 +14,9 @@ public interface ITaxonomyService {
     TaxonomyEntity createIfNotExist(String term, String type);
     TaxonomyEntity add(String term, String type);
     List<TaxonomyEntity> createIfNotExist(List<String> terms, String type);
-    List<TaxonomyEntity> findByType(String type);
+    List<TaxonomyEntity> findByTypeCached(String type);
     String findByTypeJson(String type);
-    List<TaxonomyEntity> findAll();
-    List<String> findAllType();
+    List<TaxonomyEntity> findAllCached();
+    List<String> findAllTypeCached();
     String getJson();
 }

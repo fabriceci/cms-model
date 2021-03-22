@@ -16,8 +16,7 @@ import java.util.stream.Collectors;
 @Service
 public class CacheableAppParamsProviderImpl implements ICacheableAppParamsProvider {
 
-    @Autowired
-    private IAppParamRepository appParamRepository;
+    @Autowired private IAppParamRepository appParamRepository;
 
     @Override
     @Cacheable(value = "global", key= "'appParams'")

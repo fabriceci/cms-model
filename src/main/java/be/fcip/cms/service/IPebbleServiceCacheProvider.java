@@ -4,5 +4,5 @@ import com.mitchellbosecke.pebble.template.PebbleTemplate;
 
 public interface IPebbleServiceCacheProvider {
 
-    PebbleTemplate getCompiledTemplate(Long id);
+    PebbleTemplate getCompiledTemplate(String content, String key);
 }

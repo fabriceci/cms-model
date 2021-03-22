@@ -11,16 +11,16 @@ public interface IPageTemplateService {
 
     PageTemplateEntity findByName(String name);
 
-    PageTemplateEntity find(Long id);
+    PageTemplateEntity findCached(Long id);
 
-    PageTemplateEntity findEntity(Long id);
+    PageTemplateEntity find(Long id);
 
     String jsonContent();
 
     // save & delete
 
     @PreAuthorize("hasRole('ROLE_SUPER_ADMIN')")
-    PageTemplateEntity save(PageTemplateEntity contentTemplate);
+    PageTemplateEntity save(PageTemplateEntity template);
 
     @PreAuthorize("hasRole('ROLE_SUPER_ADMIN')")
     void delete(Long id) throws Exception;

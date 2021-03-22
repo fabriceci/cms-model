@@ -2,7 +2,6 @@ package be.fcip.cms.persistence.cache;
 
 import be.fcip.cms.model.db.PageableResult;
 import be.fcip.cms.persistence.model.PageEntity;
-import org.springframework.cache.annotation.Cacheable;
 
 import java.time.LocalDateTime;
 import java.util.Locale;

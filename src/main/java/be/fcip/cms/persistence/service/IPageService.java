@@ -14,15 +14,15 @@ import java.util.regex.PatternSyntaxException;
 
 public interface IPageService {
 
-    PageableResult<PageEntity> findWebContent(String locale, String type, String contentType, Long pageNumber, Long limit);
+    PageableResult<PageEntity> search(String locale, String type, String contentType, Long pageNumber, Long limit);
 
     // Save
     @PreAuthorize("hasAnyRole('ROLE_ADMIN_CMS', 'ROLE_ADMIN_WEBCONTENT')")
-    PageEntity saveContent(PageEntity p);
+    PageEntity savePage(PageEntity p);
     @PreAuthorize("hasAnyRole('ROLE_ADMIN_CMS', 'ROLE_ADMIN_WEBCONTENT')")
-    List<PageEntity> saveContent(List<PageEntity> pages);
+    List<PageEntity> savePage(List<PageEntity> pages);
     @PreAuthorize("hasAnyRole('ROLE_ADMIN_CMS', 'ROLE_ADMIN_WEBCONTENT')")
-    PageContentEntity saveContentData(PageContentEntity content);
+    PageContentEntity savePageData(PageContentEntity content);
 
     // Delete
     @PreAuthorize("hasAnyRole('ROLE_ADMIN_CMS_DELETE', 'ROLE_ADMIN_WEBCONTENT_DELETE')")
@@ -30,45 +30,39 @@ public interface IPageService {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN_CMS_DELETE', 'ROLE_ADMIN_WEBCONTENT_DELETE')")
     void deleteContentData(Long id) throws Exception;
 
-    String getNav(Long contentId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId);
+    String getNavCached(Long contentId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId);
 
-    String getBreadcrumb(PageEntity content, String locale, String seperator, Long parendId, boolean h1);
+    String getBreadcrumbCached(PageEntity content, String locale, String seperator, Long parendId, boolean h1);
 
-    String getPagesTree(String lang, String type, Long websiteId);
+    String getPagesTreeCached(String lang, String type, Long websiteId);
 
-    PageEntity findContent(Long id);
+    PageEntity findPage(Long id, boolean withJoin);
 
-    PageContentEntity findPageContentEntity(Long id);
+    PageEntity findPageCached(Long id);
 
-    boolean contentCanBeDeleted(PageEntity content, String contentDataLocale);
+    PageContentEntity findPageContent(Long id);
 
-    boolean contentIsVisible(PageEntity content);
+    boolean pageCanBeDeleted(PageEntity content, String contentDataLocale);
 
-    boolean contentIsVisible(PageEntity content, PageContentEntity contentDataEntity);
+    boolean pageIsVisible(PageEntity content);
 
-    boolean contentIsPrivate(PageEntity content);
+    boolean pageIsVisible(PageEntity content, PageContentEntity contentDataEntity);
+
+    boolean pageIsPrivate(PageEntity content);
 
     String getContentJsonByTypeAndParams(String contentType, Map<String,String> params) throws Exception;
 
-    PageContentEntity findContentData(Long id);
-
     PageEntity findBySlugCached(String slug, Locale locale);
 
-    Collection<PermissionEntity> getRoleForContent(PageEntity content);
+    Collection<PermissionEntity> getRoleForPage(PageEntity content);
 
-    PageableResult<PageEntity> findWebContent(String locale, Long year, String name, String type, String theme, String tags, String contentType, Long pageNumber, Long limit, Boolean isPrivate);
+    PageableResult<PageEntity> search(String locale, Long year, String name, String type, String theme, String tags, String contentType, Long pageNumber, Long limit, Boolean isPrivate);
 
-    PageableResult<PageEntity> findWebContent(String locale, Long yearStart, Long yearEnd, String name, String type, String theme, String tags, String contentType, Long pageNumber, Long limit, Boolean isPrivate);
+    PageableResult<PageEntity> search(String locale, Long yearStart, Long yearEnd, String name, String type, String theme, String tags, String contentType, Long pageNumber, Long limit, Boolean isPrivate);
 
-    PageableResult<PageEntity> findWebContent(String locale, LocalDateTime begin, LocalDateTime end, String name, String type, String theme, String tags, String contentType, Long pageNumber, Long limit, Boolean isPrivate);
+    PageableResult<PageEntity> search(String locale, LocalDateTime begin, LocalDateTime end, String name, String type, String theme, String tags, String contentType, Long pageNumber, Long limit, Boolean isPrivate);
 
     List<PageEntity> findParents(PageEntity parent);
-
-    List<Number> getRevisionNumberList(Long id);
-
-    PageContentEntity getRevisionEntity(Number id);
-
-    Object[] getRevision(Number id);
 
     String getWebContentRuleJson() throws Exception;
 
@@ -78,7 +72,7 @@ public interface IPageService {
 
     void deleteRule(String id);
 
-    Map<Long, Set<Pattern>> getDynamicUrl() throws PatternSyntaxException;
+    Map<Long, Set<Pattern>> getDynamicUrlCached() throws PatternSyntaxException;
 
     void clearCache(Long id);
 }

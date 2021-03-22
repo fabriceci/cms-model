@@ -5,7 +5,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:2.4.3"
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:2.4.4"
     }
 }
 
@@ -48,7 +48,7 @@ dependencies {
 
     // database
     api 'org.springframework.data:spring-data-envers'
-    api 'com.vladmihalcea:hibernate-types-52:2.9.13'
+    api 'com.vladmihalcea:hibernate-types-52:2.10.4'
     api 'com.integralblue:log4jdbc-spring-boot-starter:2.0.0'
 
     // Common

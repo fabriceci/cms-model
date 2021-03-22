@@ -18,7 +18,7 @@ public class CmsTypeUtilsTest {
     @DisplayName("Safe Cast Test")
     @SuppressWarnings("unchecked")
     public void safeCast(){
-        Object stringInput = "test";
+        Object stringInput = "foo";
         Object integerInput = 1;
         Object longInput = 1L;
         Object floatInput = 3.4f;
@@ -34,7 +34,7 @@ public class CmsTypeUtilsTest {
         assertEquals(1L, CmsTypeUtils.safeCast(longInput, Long.class));
         assertEquals(3.4f, CmsTypeUtils.safeCast(floatInput, Float.class));
         assertEquals(3.2d, CmsTypeUtils.safeCast(doubleInput, Double.class));
-        assertEquals("test", CmsTypeUtils.safeCast(stringInput, String.class));
+        assertEquals("foo", CmsTypeUtils.safeCast(stringInput, String.class));
         assertNotNull(listOutput);
         assertEquals(Arrays.asList("1", "2"), listOutput);
         assertThat(listOutput, hasSize(2));

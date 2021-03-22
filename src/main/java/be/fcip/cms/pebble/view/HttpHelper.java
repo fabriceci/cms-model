@@ -16,10 +16,10 @@ public class HttpHelper {
         return CmsHttpUtils.isAjax(request);
     }
 
-    public static String getBaseUrl(HttpServletRequest request) {
+    public static String baseUrl(HttpServletRequest request) {
         return CmsHttpUtils.getBaseUrl(request);
     }
-    public static String getFullURL (HttpServletRequest request) {
+    public static String fullURL (HttpServletRequest request) {
         return CmsHttpUtils.getFullURL(request);
     }
 

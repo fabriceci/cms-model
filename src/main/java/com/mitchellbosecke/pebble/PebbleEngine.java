@@ -629,8 +629,11 @@ public class PebbleEngine {
                 }
             } else {
                 this.templateCache = new NoOpTemplateCache();
-                if(this.tagCache == null || !cacheTagActive) {
+
+                if(!this.cacheTagActive){
                     this.tagCache = new NoOpTagCache();
+                } else if(this.tagCache == null) {
+                    this.tagCache = new ConcurrentMapTagCache();
                 }
             }
 

@@ -1,4 +1,4 @@
-package be.fcip.cms.persistence.model;
+package be.fcip.cms.model;
 
 import lombok.*;
 

@@ -20,11 +20,7 @@ public interface IAuthorityService {
     @PreAuthorize("hasRole('ROLE_ADMIN_GROUP')")
     GroupEntity saveGroup(GroupEntity group);
     @PreAuthorize("hasRole('ROLE_ADMIN_GROUP')")
-    List<GroupEntity> saveGroups(List<GroupEntity> groups);
-    @PreAuthorize("hasRole('ROLE_ADMIN_GROUP')")
-    PermissionEntity saveRole(PermissionEntity role);
-    @PreAuthorize("hasRole('ROLE_ADMIN_GROUP')")
-    List<PermissionEntity> saveRoles(List<PermissionEntity> roles);
+    PermissionEntity savePermission(PermissionEntity role);
 
     /* TODO: Rename FindAllNonSuperAdmin */
     List<GroupEntity> findAllClientGroup();

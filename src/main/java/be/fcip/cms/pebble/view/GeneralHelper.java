@@ -17,7 +17,18 @@ import java.util.regex.Pattern;
  */
 @Component
 @Slf4j
-public class CmsHelper {
+public class GeneralHelper {
+
+    public String languageName(String lang){
+        return new Locale(lang).getDisplayLanguage();
+    }
+
+    /*
+
+    public Locale getLocale(String code){
+        Locale locale = LocaleUtils.toLocale(code);
+        return ApplicationUtils.locales.contains(locale) ? locale : null;
+    }
 
     private static Pattern extractYoutubeId = Pattern.compile("v=(\\w+)");
 
@@ -36,7 +47,6 @@ public class CmsHelper {
         return CmsJsonUtils.isJSONValid(json);
     }
 
-
     public static String toJson(Object o){
         return CmsJsonUtils.toJson(o);
     }
@@ -46,10 +56,7 @@ public class CmsHelper {
     }
 
 
-    public Locale getLocale(String code){
-        Locale locale = LocaleUtils.toLocale(code);
-        return ApplicationUtils.locales.contains(locale) ? locale : null;
-    }
+
 
     public static String getYearStringFromDate(Date date){
         return CmsDateUtils.getYearStringFromDate(date);
@@ -58,4 +65,5 @@ public class CmsHelper {
     public List<Long> getLoopList(Long from, Long to){
         return CmsNumericUtils.getLoopList(from, to);
     }
+    */
 }

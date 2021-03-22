@@ -13,6 +13,7 @@ import be.fcip.cms.persistence.repository.IVerificationTokenRepository;
 import be.fcip.cms.util.CmsDateUtils;
 import be.fcip.cms.util.CmsSecurityUtils;
 import be.fcip.cms.util.CmsUtils;
+import de.cronn.reflection.util.immutable.ImmutableProxy;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -38,29 +39,26 @@ import java.util.*;
 @Transactional
 public class UserServiceImpl implements IUserService {
 
-    @Autowired
-    private IUserRepository userRepository;
-    @Autowired
-    private IAuthorityService authorityService;
-    @Autowired
-    private CacheManager cacheManager;
+    @Autowired private IUserRepository userRepository;
+    @Autowired private IAuthorityService authorityService;
+    @Autowired private CacheManager cacheManager;
 
     //@Value("${max.ip.attemps}")
     //private int maxIpAttempts;
     //@Value("${max.login.attemps}")
     //private int maxLoginAttempts;
-    @Autowired
-    @Qualifier("passwordEncoder")
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private IVerificationTokenRepository verificationTokenRepository;
-    @Autowired
-    private SessionRegistry sessionRegistry;
-    @Autowired
-    private IPasswordResetTokenRepository passwordResetTokenRepository;
-    @Autowired
-    private ICacheableUserProvider cacheableUserProvider;
+    @Autowired @Qualifier("passwordEncoder") private PasswordEncoder passwordEncoder;
+    @Autowired private IVerificationTokenRepository verificationTokenRepository;
+    @Autowired private SessionRegistry sessionRegistry;
+    @Autowired private IPasswordResetTokenRepository passwordResetTokenRepository;
+    @Autowired private ICacheableUserProvider cacheableUserProvider;
 
+    /**
+     * Cached
+     * @param username
+     * @return
+     * @throws UsernameNotFoundException
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserEntity user = cacheableUserProvider.findByUsernameOrEmail(username);
@@ -77,8 +75,8 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public UserEntity findByUsernameOrEmail(String email) {
-        return cacheableUserProvider.findByUsernameOrEmail(email);
+    public UserEntity findByUsernameOrEmailCached(String email) {
+        return ImmutableProxy.create(cacheableUserProvider.findByUsernameOrEmail(email));
     }
 
     @Override
@@ -141,7 +139,7 @@ public class UserServiceImpl implements IUserService {
     @Transactional(noRollbackFor = {LockedException.class})
     public void checkUserAttempts(String username) {
 
-        UserEntity user = findByUsernameOrEmail(username);
+        UserEntity user = findByUsernameOrEmailCached(username);
 
         if (user != null) {
 

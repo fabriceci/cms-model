@@ -3,6 +3,7 @@ package be.fcip.cms.persistence.service;
 import be.fcip.cms.persistence.cache.ICacheableTemplateProvider;
 import be.fcip.cms.persistence.model.PageEntity;
 import be.fcip.cms.persistence.model.PageTemplateEntity;
+import be.fcip.cms.persistence.repository.IAuditRepository;
 import be.fcip.cms.persistence.repository.IPageRepository;
 import be.fcip.cms.persistence.repository.IPageTemplateRepository;
 import be.fcip.cms.util.ApplicationUtils;
@@ -28,17 +29,10 @@ import java.util.Set;
 @Slf4j
 public class PageTemplateServiceImpl implements IPageTemplateService {
 
-    @Autowired
-    private IPageTemplateRepository contentTemplateRepository;
-
-    @Autowired
-    private ICacheableTemplateProvider cacheableTemplateProvider;
-
-    @Autowired
-    private CacheManager cacheManager;
-
-    @Autowired
-    private IPageRepository pageRepository;
+    @Autowired private IPageTemplateRepository contentTemplateRepository;
+    @Autowired private ICacheableTemplateProvider cacheableTemplateProvider;
+    @Autowired private CacheManager cacheManager;
+    @Autowired private IPageRepository pageRepository;
 
     @Override
     public List<PageTemplateEntity> findAllByTypeLike(String type) {
@@ -46,12 +40,12 @@ public class PageTemplateServiceImpl implements IPageTemplateService {
     }
 
     @Override
-    public PageTemplateEntity find(Long id) {
+    public PageTemplateEntity findCached(Long id) {
         return cacheableTemplateProvider.find(id);
     }
 
     @Override
-    public PageTemplateEntity findEntity(Long id) {
+    public PageTemplateEntity find(Long id) {
         return contentTemplateRepository.findById(id).orElse(null);
     }
 
@@ -62,17 +56,23 @@ public class PageTemplateServiceImpl implements IPageTemplateService {
 
     @Override
     @Caching(evict = {
-            @CacheEvict(value = "template", key = "#contentTemplate.id"),
+            @CacheEvict(value = "template", key = "#template.id"),
+            @CacheEvict(value = "pebble", key = "'template_' + #template.id"),
+            @CacheEvict(value = "pebble", key = "'template_' + #template.id + '_top'"),
+            @CacheEvict(value = "pebble", key = "'template_' + #template.id + '_bot'"),
     })
-    public PageTemplateEntity save(PageTemplateEntity contentTemplate) {
-        cleanBlockCache(contentTemplate);
-        return contentTemplateRepository.save(contentTemplate);
+    public PageTemplateEntity save(PageTemplateEntity template) {
+        cleanCache(template);
+        return contentTemplateRepository.save(template);
     }
 
 
     @Override
     @Caching(evict = {
             @CacheEvict(value = "template", key = "#id"),
+            @CacheEvict(value = "pebble", key = "'template_' + #id"),
+            @CacheEvict(value = "pebble", key = "'template_' + #id + '_top'"),
+            @CacheEvict(value = "pebble", key = "'template_' + #id + '_bot'"),
     })
     public void delete(Long id) throws Exception {
         PageTemplateEntity contentTemplateEntity = contentTemplateRepository.findById(id).orElse(null);
@@ -83,16 +83,11 @@ public class PageTemplateServiceImpl implements IPageTemplateService {
             log.error(message);
             throw new Exception(message);
         }
-        cleanBlockCache(contentTemplateEntity);
+        cleanCache(contentTemplateEntity);
         contentTemplateRepository.deleteById(id);
     }
 
-    private void cleanBlockCache(PageTemplateEntity pageTemplate){
-        if(pageTemplate.getBlock() != null && pageTemplate.getBlock().getId() != 0){
-            Cache cacheBlock = cacheManager.getCache("block");
-            cacheBlock.evict(pageTemplate.getBlock().getId());
-            cacheBlock.evict("compiled_block_" + pageTemplate.getBlock().getId());
-        }
+    private void cleanCache(PageTemplateEntity pageTemplate){
         Set<PageEntity> pages = pageRepository.findAllPagesByTemplate(pageTemplate.getId());
         Cache fullCache = cacheManager.getCache("pageFull");
         Cache shortCache = cacheManager.getCache("pageShort");

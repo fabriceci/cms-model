@@ -12,8 +12,7 @@ import java.util.Map;
 @Slf4j
 public class HashMapConverter implements AttributeConverter<Map<String, Object>, String> {
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private ObjectMapper objectMapper;
 
     @Override
     public String convertToDatabaseColumn(Map<String, Object> customerInfo) {

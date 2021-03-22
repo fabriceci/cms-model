@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
+import org.hibernate.envers.RelationTargetAuditMode;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -15,6 +18,7 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
 public class PageTemplateEntity {
 
     @Id
@@ -45,14 +49,15 @@ public class PageTemplateEntity {
 
     @Lob private String fields;
 
-    @OneToOne(targetEntity = BlockEntity.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private BlockEntity block;
+    @Lob
+    private String template;
 
     @OneToMany(
             mappedBy = "template",
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @NotAudited
     private Set<PageEntity> pages = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)

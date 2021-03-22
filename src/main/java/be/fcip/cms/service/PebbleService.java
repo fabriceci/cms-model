@@ -1,12 +1,12 @@
 package be.fcip.cms.service;
 
 import be.fcip.cms.hook.IModelExtension;
-import be.fcip.cms.persistence.model.BlockEntity;
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.error.PebbleException;
 import com.mitchellbosecke.pebble.extension.ExtensionRegistry;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -17,7 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,13 +25,9 @@ import java.util.Map;
 @Slf4j
 public class PebbleService implements IPeebleService {
 
-    @Autowired
-    @Qualifier("pebbleStringEngine")
-    private PebbleEngine pebbleStringEngine;
-    @Autowired
-    private List<IModelExtension> modelExtensionList;
-    @Autowired
-    private IPebbleServiceCacheProvider cacheProvider;
+    @Autowired @Qualifier("pebbleStringEngine") private PebbleEngine pebbleStringEngine;
+    @Autowired private List<IModelExtension> modelExtensionList;
+    @Autowired private IPebbleServiceCacheProvider cacheProvider;
 
     @PostConstruct
     public void init(){
@@ -40,29 +35,22 @@ public class PebbleService implements IPeebleService {
     }
 
     @Override
-    public String parseString(String data, Map<String, Object> model)  throws IOException, PebbleException{
+    public String parseString(String data, Map<String, Object> model, String cacheKey)  throws IOException, PebbleException{
+        if(data == null) throw new RuntimeException("Parsed String could not be null");
         if (model == null) {
             model = new LinkedHashMap<>(10);
         }
         ExtensionRegistry extensionRegistry = pebbleStringEngine.getExtensionRegistry();
-        PebbleTemplate template = pebbleStringEngine.getTemplate(data, null, true);
+        PebbleTemplate template = null;
+        if(StringUtils.isEmpty(cacheKey)){
+            template = pebbleStringEngine.getTemplate(data);
+        } else {
+            template = cacheProvider.getCompiledTemplate(data, cacheKey);
+        }
         Writer writer = new StringWriter();
         template.evaluate(writer, model, LocaleContextHolder.getLocale());
         return writer.toString();
     }
-
-    @Override
-    public String parseBlock(BlockEntity block, Map<String, Object> model) throws IOException, PebbleException {
-        if(block == null) throw new IllegalArgumentException();
-        if (model == null) {
-            model = new HashMap<>(10);
-        }
-        PebbleTemplate compiledTemplate = cacheProvider.getCompiledTemplate(block.getId());
-        Writer writer = new StringWriter();
-        compiledTemplate.evaluate(writer, model, LocaleContextHolder.getLocale());
-        return writer.toString();
-    }
-
 
     @Override
     public void fillModelMap(Map<String, Object> model, HttpServletRequest request) {
@@ -70,6 +58,7 @@ public class PebbleService implements IPeebleService {
         boolean isAdmin = request.getRequestURI().startsWith("/admin/");
         for (IModelExtension modelExtension : modelExtensionList) {
             if(modelExtension.excludeAdmin() && isAdmin) continue;
+            if(!modelExtension.supportedMethods().contains( request.getMethod())) continue;
             modelExtension.fillModelMap(model, request);
         }
     }

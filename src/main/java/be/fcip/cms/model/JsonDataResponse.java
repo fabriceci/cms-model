@@ -1,4 +1,4 @@
-package be.fcip.cms.persistence.model;
+package be.fcip.cms.model;
 
 import com.google.gson.annotations.Expose;
 import lombok.Getter;
@@ -10,9 +10,9 @@ import java.util.Map;
 
 @Getter
 @Setter
-public class JsonErrorResponse {
+public class JsonDataResponse {
 
     @Expose
-    private List<Map> errors = new ArrayList<>();
+    private List<Map> data = new ArrayList<>();
 }
 

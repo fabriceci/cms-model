@@ -37,7 +37,6 @@ public class CmsFieldEntity {
 
     private boolean deletable = true;
 
-    @OneToOne(targetEntity = BlockEntity.class, fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    private BlockEntity blockEntity;
-
+    @Lob
+    private String template;
 }

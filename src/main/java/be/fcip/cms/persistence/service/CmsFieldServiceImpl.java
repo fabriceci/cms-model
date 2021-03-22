@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,24 +22,16 @@ import java.util.Optional;
 @Slf4j
 public class CmsFieldServiceImpl implements ICmsFieldService  {
 
-    @Autowired
-    private ICmsFieldRepository cmsFieldRepository;
-    @Autowired
-    private ICacheableTemplateProvider cacheableTemplateProvider;
+    @Autowired private ICmsFieldRepository cmsFieldRepository;
+    @Autowired private ICacheableTemplateProvider cacheableTemplateProvider;
 
     @Override
-    @CacheEvict(value = "template", key = "'allCmsFields'")
-    public List<CmsFieldEntity> saveCmsField(List<CmsFieldEntity> list) {
-        for (CmsFieldEntity cmsFieldEntity : list) {
-            saveCmsField(cmsFieldEntity);
-        }
-        return list;
-    }
-
-    @Override
-    @CacheEvict(value = "template", key = "'allCmsFields'")
-    public CmsFieldEntity saveCmsField(CmsFieldEntity cmsFieldEntity) {
-        return cmsFieldRepository.save(cmsFieldEntity);
+    @Caching(evict = {
+            @CacheEvict(value = "global", key = "'allCmsFields'"),
+            @CacheEvict(value = "pebble", key = "'field_' + #field.id")
+    })
+    public CmsFieldEntity saveCmsField(CmsFieldEntity field) {
+        return cmsFieldRepository.save(field);
     }
 
     @Override
@@ -65,12 +58,15 @@ public class CmsFieldServiceImpl implements ICmsFieldService  {
     }
 
     @Override
-    public List<CmsFieldEntity> findAllCmsField() {
+    public List<CmsFieldEntity> findAllCmsFieldCached() {
         return cacheableTemplateProvider.findAllFields();
     }
 
     @Override
-    @CacheEvict(value = "template", key = "'allCmsFields'")
+    @Caching(evict = {
+            @CacheEvict(value = "global", key = "'allCmsFields'"),
+            @CacheEvict(value = "pebble", key = "'field_' + #id")
+    })
     public void deleteCmsField(Long id) throws Exception {
         Optional<CmsFieldEntity> fieldset = cmsFieldRepository.findById(id);
         if (!fieldset.isPresent()) {

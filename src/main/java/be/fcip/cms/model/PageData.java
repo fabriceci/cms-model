@@ -1,4 +1,4 @@
-package be.fcip.cms.persistence.model;
+package be.fcip.cms.model;
 
 import com.google.gson.annotations.Expose;
 import lombok.Getter;

@@ -72,12 +72,10 @@ public class UserEntity extends AbstractTimestampEntity implements UserDetails {
     }
 
     public Set<GrantedAuthority> getGrantedAuthorities(){
-        Collection<GroupEntity> privileges = this.getGroups();
         return getGrantedAuthorities(getPrivileges(groups));
     }
 
     public Set<String> getRolesSet(){
-        Collection<GroupEntity> privileges = this.getGroups();
         Set<GrantedAuthority> grantedAuthorities = getGrantedAuthorities(getPrivileges(groups));
         Set<String> roles = new HashSet<>();
         for (GrantedAuthority grantedAuthority : grantedAuthorities) {

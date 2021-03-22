@@ -16,7 +16,7 @@ public class AssetsHelper {
         return ASSETS_PATH + path + "?" + CmsUtils.CMS_UNIQUE_NUMBER;
     }
 
-    public static String getThumbnailPath(String path){
+    public static String thumbnailPath(String path){
         if(StringUtils.isEmpty(path)) return null;
 
         final String fullPath = FilenameUtils.getFullPath(path);

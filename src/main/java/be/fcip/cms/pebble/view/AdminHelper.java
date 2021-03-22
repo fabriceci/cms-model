@@ -15,10 +15,9 @@ import java.util.List;
 @Slf4j
 public class AdminHelper {
 
-    @Autowired
-    private List<IAdminMenu> items;
+    @Autowired private List<IAdminMenu> items;
 
-    public List<AdminMenuItem> getAdminMenu(){
+    public List<AdminMenuItem> menu(){
         List<AdminMenuItem> result = new ArrayList<>();
 
         for (IAdminMenu item : items) {

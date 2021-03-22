@@ -4,6 +4,4 @@ import be.fcip.cms.persistence.model.BlockEntity;
 
 public interface ICacheableBlockProvider {
     BlockEntity find(Long id);
-
-    BlockEntity findByName(String name);
 }

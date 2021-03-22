@@ -21,9 +21,8 @@ public class Cache2kTagCache implements PebbleCache<CacheKey, Object> {
 
     @Override
     public Object computeIfAbsent(CacheKey key, Function<? super CacheKey, ?> mappingFunction) {
-        return this.tagCache.computeIfAbsent(key, () -> {
-            return mappingFunction.apply(key);
-        });
+
+        return this.tagCache.computeIfAbsent(key, mappingFunction);
     }
 
     @Override

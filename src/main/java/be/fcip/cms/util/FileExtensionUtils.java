@@ -27,7 +27,7 @@ public class FileExtensionUtils {
     public static final String VIDEO = "video.png";
 
 
-    private static HashMap<String, String> imageMapping;
+    private final static HashMap<String, String> imageMapping;
 
     static {
         imageMapping = new HashMap<>(5);

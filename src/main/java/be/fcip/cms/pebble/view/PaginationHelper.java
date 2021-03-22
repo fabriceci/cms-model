@@ -14,11 +14,11 @@ import java.util.Map;
 @Slf4j
 public class PaginationHelper {
 
-    public static String getPageableNavigation(PageableResult result, HttpServletRequest request, Long delta){
-        return getPageableNavigation(result, request, delta, true, true);
+    public static String get(PageableResult result, HttpServletRequest request, Long delta){
+        return get(result, request, delta, true, true);
     }
 
-    public static String getPageableNavigation(PageableResult pageableResult, HttpServletRequest request, Long delta,  boolean preNext, boolean firstEnd){
+    public static String get(PageableResult pageableResult, HttpServletRequest request, Long delta,  boolean preNext, boolean firstEnd){
 
         StringBuilder sb = new StringBuilder();
         String queryString = request.getQueryString();
@@ -31,7 +31,7 @@ public class PaginationHelper {
 
         int currentPage = Math.toIntExact(pageableResult.getCurrentPage());
         int totalPage = Math.toIntExact(pageableResult.getTotalPage());
-        int arrInf = (int)Math.floor(delta/2);
+        int arrInf = (int)Math.floor(delta/2.0);
 
         int min = 1;
         int max = totalPage;

@@ -23,12 +23,6 @@ public class SpringTagCache implements PebbleCache<CacheKey, Object> {
         Object apply = mappingFunction.apply(key);
         tagCache.put(key, apply);
         return apply;
-        /*
-        Cache.ValueWrapper valueWrapper = this.tagCache.get(key);
-        int i = key.hashCode();
-        return tagCache.putIfAbsent(key, mappingFunction.apply(key));
-
-         */
     }
 
     @Override

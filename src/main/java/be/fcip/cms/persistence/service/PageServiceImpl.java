@@ -4,16 +4,13 @@ import be.fcip.cms.exception.ResourceNotFoundException;
 import be.fcip.cms.model.db.PageableResult;
 import be.fcip.cms.persistence.cache.ICacheablePageProvider;
 import be.fcip.cms.persistence.cache.ICacheablePageTreeProvider;
-import be.fcip.cms.persistence.cache.ICacheablePageUtilProvider;
 import be.fcip.cms.persistence.model.*;
 import be.fcip.cms.persistence.repository.*;
 import be.fcip.cms.util.ApplicationUtils;
-import be.fcip.cms.util.CmsContentUtils;
 import be.fcip.cms.util.CmsDateUtils;
 import be.fcip.cms.util.CmsUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -37,26 +34,15 @@ import java.util.regex.Pattern;
 public class PageServiceImpl implements IPageService {
 
     // repository
-    @Autowired
-    private IAuditRepository auditRepository;
-    @Autowired
-    private IPageRepository pageRepository;
-    @Autowired
-    private IPageContentRepository pageContentRepository;
-    @Autowired
-    private IWebContentRuleTemplateRepository webContentRuleTemplateRepository;
-    @Autowired
-    private IPageTemplateRepository templateRepository;
-    @Autowired
-    private CacheManager cacheManager;
+    @Autowired private IPageRepository pageRepository;
+    @Autowired private IPageContentRepository pageContentRepository;
+    @Autowired private IWebContentRuleTemplateRepository webContentRuleTemplateRepository;
+    @Autowired private IPageTemplateRepository templateRepository;
+    @Autowired private CacheManager cacheManager;
 
     // cacheable service
-    @Autowired
-    private ICacheablePageProvider cacheableContentProvider;
-    @Autowired
-    private ICacheablePageUtilProvider cacheableContentUtilProvider;
-    @Autowired
-    private ICacheablePageTreeProvider cacheableContentTreeProvider;
+    @Autowired private ICacheablePageProvider cacheablePageProvider;
+    @Autowired private ICacheablePageTreeProvider cacheablePageTreeProvider;
 
     /**
      * Public page / when user request a page
@@ -64,28 +50,27 @@ public class PageServiceImpl implements IPageService {
     @Override
     public PageEntity findBySlugCached(String slug, Locale locale) {
 
-        Long contentId = cacheableContentProvider.findContentId(slug, locale);
-        if (contentId == null)
+        Long pageId = cacheablePageProvider.findContentId(slug, locale);
+        if (pageId == null)
             return null;
 
-        return cacheableContentProvider.findContent(contentId);
+        return cacheablePageProvider.findContent(pageId);
     }
 
 
     @Override
-    public PageContentEntity findPageContentEntity(Long id) {
-        return pageContentRepository.findById(id).orElse(null);
-    }
-
-    // Find DTO
-    @Override
-    public PageContentEntity findContentData(Long id) {
+    public PageContentEntity findPageContent(Long id) {
         return pageContentRepository.findById(id).orElse(null);
     }
 
     @Override
-    public PageEntity findContent(Long id) {
-        return cacheableContentProvider.findContent(id);
+    public PageEntity findPage(Long id, boolean withJoin) {
+        return withJoin ? pageRepository.findContentCustom(id) : pageRepository.findOne(id);
+    }
+
+    @Override
+    public PageEntity findPageCached(Long id) {
+        return cacheablePageProvider.findContent(id);
     }
 
     @Override
@@ -94,7 +79,7 @@ public class PageServiceImpl implements IPageService {
     }
 
     @Override
-    public PageableResult<PageEntity> findWebContent(String locale, Long year, String name, String type, String theme, String tags, String contentType, Long pageNumber, Long limit, Boolean isPrivate) {
+    public PageableResult<PageEntity> search(String locale, Long year, String name, String type, String theme, String tags, String contentType, Long pageNumber, Long limit, Boolean isPrivate) {
         LocalDateTime begin = null;
         LocalDateTime end = null;
         if (year != null && year != 0) {
@@ -102,11 +87,11 @@ public class PageServiceImpl implements IPageService {
             end = CmsDateUtils.getEndDateYear(year.intValue());
         }
 
-        return cacheableContentProvider.findWebContent(locale, begin, end, name, type, theme, tags, contentType, pageNumber, limit, isPrivate);
+        return cacheablePageProvider.findWebContent(locale, begin, end, name, type, theme, tags, contentType, pageNumber, limit, isPrivate);
     }
 
     @Override
-    public PageableResult<PageEntity> findWebContent(String locale, Long yearStart, Long yearEnd, String name, String type, String theme, String tags, String contentType, Long pageNumber, Long limit, Boolean isPrivate) {
+    public PageableResult<PageEntity> search(String locale, Long yearStart, Long yearEnd, String name, String type, String theme, String tags, String contentType, Long pageNumber, Long limit, Boolean isPrivate) {
         LocalDateTime begin = null;
         LocalDateTime end = null;
         if (yearStart != null && yearStart != 0) {
@@ -114,28 +99,28 @@ public class PageServiceImpl implements IPageService {
             end = CmsDateUtils.getEndDateYear(yearEnd.intValue());
         }
 
-        return cacheableContentProvider.findWebContent(locale, begin, end, name, type, theme, tags, contentType, pageNumber, limit, isPrivate);
+        return cacheablePageProvider.findWebContent(locale, begin, end, name, type, theme, tags, contentType, pageNumber, limit, isPrivate);
     }
 
 
     @Override
-    public PageableResult<PageEntity> findWebContent(String locale, LocalDateTime begin, LocalDateTime end, String name, String type, String theme, String tags, String contentType, Long pageNumber, Long limit, Boolean isPrivate) {
+    public PageableResult<PageEntity> search(String locale, LocalDateTime begin, LocalDateTime end, String name, String type, String theme, String tags, String contentType, Long pageNumber, Long limit, Boolean isPrivate) {
 
-        return cacheableContentProvider.findWebContent(locale, begin, end, name, type, theme, tags, contentType, pageNumber, limit, isPrivate);
+        return cacheablePageProvider.findWebContent(locale, begin, end, name, type, theme, tags, contentType, pageNumber, limit, isPrivate);
     }
 
 
     @Override
-    public PageableResult<PageEntity> findWebContent(String locale, String type, String contentType, Long pageNumber, Long limit) {
+    public PageableResult<PageEntity> search(String locale, String type, String contentType, Long pageNumber, Long limit) {
 
-        return cacheableContentProvider.findWebContent(locale, null, null, null, type, null, null, contentType, pageNumber, limit, null);
+        return cacheablePageProvider.findWebContent(locale, null, null, null, type, null, null, contentType, pageNumber, limit, null);
     }
     @Override
     @Caching(evict = {
             @CacheEvict(value = "global", key= "'dynamicSlug'"),
             @CacheEvict(value = "pageGlobal", allEntries = true),
     })
-    public PageEntity saveContent(PageEntity p) {
+    public PageEntity savePage(PageEntity p) {
 
         clearCache(p.getId());
         if (p.getId() == 0) {
@@ -158,16 +143,16 @@ public class PageServiceImpl implements IPageService {
             @CacheEvict(value = "global", key= "'dynamicSlug'"),
             @CacheEvict(value = "pageGlobal", allEntries = true),
     })
-    public List<PageEntity> saveContent(List<PageEntity> pages) {
+    public List<PageEntity> savePage(List<PageEntity> pages) {
         for (PageEntity page : pages) {
-            page = saveContent(page);
+            page = savePage(page);
         }
         return pages;
     }
 
     public void clearCache(Long id) {
         if(id == 0) return;
-        PageEntity content = cacheableContentProvider.findContent(id);
+        PageEntity content = cacheablePageProvider.findContent(id);
         // Clear Page full
         Cache fullCache = cacheManager.getCache("pageFull");
         Cache shortCache = cacheManager.getCache("pageShort");
@@ -178,6 +163,8 @@ public class PageServiceImpl implements IPageService {
         // Clear PageBySlug
         Cache pageCache = cacheManager.getCache("page");
         pageCache.evict(id);
+        pageCache.evict(id + "_top");
+        pageCache.evict(id + "_bot");
         for (Map.Entry<String, PageContentEntity> entry : content.getContentMap().entrySet()) {
             PageContentEntity value = entry.getValue();
             pageCache.evict(value.getSlug() + "_" + entry.getKey());
@@ -229,27 +216,27 @@ public class PageServiceImpl implements IPageService {
             @CacheEvict(value = "global", key= "'dynamicSlug'"),
             @CacheEvict(value = "pageGlobal", allEntries = true)
     })
-    public PageContentEntity saveContentData(PageContentEntity content) {
+    public PageContentEntity savePageData(PageContentEntity content) {
         clearCache(content.getPage().getId());
         return pageContentRepository.save(content);
     }
 
     @Override
-    public String getNav(Long contentId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId) {
-        return cacheableContentTreeProvider.getMenu(contentId, lang, depth, currentContentId, onlyTitle, rootOffset, limitRoot, websiteId);
+    public String getNavCached(Long pageId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId) {
+        return cacheablePageTreeProvider.getMenu(pageId, lang, depth, currentContentId, onlyTitle, rootOffset, limitRoot, websiteId);
     }
 
-    public String getBreadcrumb(PageEntity content, String locale, String separator) {
-        return getBreadcrumb(content, locale, separator, null, false);
-    }
-
-    @Override
-    public String getBreadcrumb(PageEntity content, String locale, String separator, Long parendId, boolean h1) {
-        return cacheableContentTreeProvider.getBreadcrumb(content, locale, separator, parendId, h1);
+    public String getBreadcrumb(PageEntity pageEntity, String locale, String separator) {
+        return getBreadcrumbCached(pageEntity, locale, separator, null, false);
     }
 
     @Override
-    public String getContentJsonByTypeAndParams(String contentType, Map<String, String> params) throws Exception {
+    public String getBreadcrumbCached(PageEntity content, String locale, String separator, Long parendId, boolean h1) {
+        return cacheablePageTreeProvider.getBreadcrumb(content, locale, separator, parendId, h1);
+    }
+
+    @Override
+    public String getContentJsonByTypeAndParams(String pageType, Map<String, String> params) throws Exception {
 
         String lang = StringUtils.trimToNull(params.get("lang"));
         String theme = StringUtils.trimToNull(params.get("theme"));
@@ -274,7 +261,7 @@ public class PageServiceImpl implements IPageService {
             }
         }
 
-        PageableResult<PageEntity> result = this.findWebContent(lang, year, null, types, theme, tag, contentType, 0L, 0L, isPrivate);
+        PageableResult<PageEntity> result = this.search(lang, year, null, types, theme, tag, pageType, 0L, 0L, isPrivate);
 
         JsonArrayBuilder data = Json.createArrayBuilder();
         JsonObjectBuilder row;
@@ -324,54 +311,129 @@ public class PageServiceImpl implements IPageService {
     }
 
     @Override
-    public String getPagesTree(String lang, String type, Long websiteId) {
-        return cacheableContentTreeProvider.getPagesTree(lang, type, websiteId);
+    public String getPagesTreeCached(String lang, String type, Long websiteId) {
+        return cacheablePageTreeProvider.getPagesTree(lang, type, websiteId);
     }
 
     @Override
-    public boolean contentCanBeDeleted(PageEntity content, String contentDataLocale) {
-        return cacheableContentUtilProvider.contentCanBeDeleted(content, contentDataLocale);
+    public boolean pageCanBeDeleted(PageEntity content, String contentDataLocale) {
+        if(StringUtils.isEmpty(contentDataLocale)){
+            throw new IllegalArgumentException("contentDataLocale can't be null or empty");
+        }
+
+        if (content == null || content.getId() == 0) return false;
+
+        for (PageEntity c : content.getPageChildren()) {
+            PageEntity children = cacheablePageProvider.findContent(c.getId());
+            PageContentEntity contentDataDto = children.getContentMap().get(contentDataLocale);
+
+            if (contentDataDto  == null ) {
+                return false;
+            }
+
+        }
+        return true;
     }
 
     @Override
-    public boolean contentIsPrivate(PageEntity content) {
-        return cacheableContentUtilProvider.contentIsPrivate(content);
-    }
+    public boolean pageIsPrivate(PageEntity content) {
+        // force to call cache
+        PageEntity parent = null;
 
-    @Override
-    public boolean contentIsVisible(PageEntity content) {
-        return cacheableContentUtilProvider.contentIsVisible(content);
-    }
+        if (content == null || content.getId() == 0) return false;
 
-    @Override
-    public boolean contentIsVisible(PageEntity content, PageContentEntity contentData) {
-        return cacheableContentUtilProvider.contentIsVisible(content, contentData);
-    }
+        if (content.isMemberOnly())
+            return true;
 
-    @Override
-    public Collection<PermissionEntity> getRoleForContent(PageEntity content) {
-        return cacheableContentUtilProvider.getRoles(content);
-    }
+        long parentId = content.getPageParent() != null ? content.getPageParent().getId() : 0;
 
-    @Override
-    public List<Number> getRevisionNumberList(Long id) {
-
-        return auditRepository.getRevisionNumberList(PageContentEntity.class, id);
-    }
-
-    @Override
-    public PageContentEntity getRevisionEntity(Number id){
-        try {
-            return (PageContentEntity) auditRepository.getRevisionEntity(PageContentEntity.class, id);
-        } catch(Exception e){
-            log.error("Get Revision Entity Exception, ID : " + id, e);
-            return null;
+        while (true) {
+            // no more parent
+            if (parentId == 0) {
+                return false;
+            }
+            parent = cacheablePageProvider.findContent(parentId);
+            if (parent.isMemberOnly()) {
+                return true;
+            }
+            parentId = parent.getPageParent() != null ? parent.getPageParent().getId() : 0;
         }
     }
 
     @Override
-    public Object[] getRevision(Number id) {
-        return auditRepository.getRevision(PageContentEntity.class, id);
+    public boolean pageIsVisible(PageEntity content) {
+        // force to call cache
+        PageEntity parent = null;
+
+        if (content == null || content.getId() == 0 || !content.isEnabled())
+            return false;
+
+        long parentId = content.getPageParent() != null ? content.getPageParent().getId() : 0;
+        while (true) {
+            // no more parent
+            if (parentId == 0) {
+                return true;
+            }
+            parent = cacheablePageProvider.findContent(parentId);
+
+            if (!parent.isEnabled()) {
+                return false;
+            }
+            parentId = parent.getPageParent() != null ? parent.getPageParent().getId() : 0;
+        }
+    }
+
+    @Override
+    public boolean pageIsVisible(PageEntity content, PageContentEntity contentData) {
+        // force to call cache
+        PageEntity parent = null;
+        PageContentEntity data = null;
+
+        if (content == null || content.getId() == 0 || !content.isEnabled() || contentData == null || !contentData.isEnabled())
+            return false;
+
+        long parentId = content.getPageParent() != null ? content.getPageParent().getId() : 0;
+        while (true) {
+            // no more parent
+            if (parentId == 0) {
+                return true;
+            }
+            parent = cacheablePageProvider.findContent(parentId);
+            data = parent.getContentMap().get(contentData.getLanguage());
+
+            if (!parent.isEnabled()) {
+                return false;
+            }
+
+            if (data != null && !data.isEnabled()) {
+                return false;
+            }
+            parentId = parent.getPageParent() != null ? parent.getPageParent().getId() : 0;
+        }
+    }
+
+    @Override
+    public Collection<PermissionEntity> getRoleForPage(PageEntity content) {
+        Collection<PermissionEntity> result = new HashSet<>();
+
+        if (content == null || content.getId() == 0) return null;
+
+        result.addAll(content.getPermissions());
+
+        PageEntity parent = null;
+        long parentId = content.getPageParent() != null ? content.getPageParent().getId() : 0;
+        while (true) {
+            // no more parent
+            if (parentId == 0) {
+                break;
+            }
+            parent = cacheablePageProvider.findContent(parentId);
+
+            result.addAll(parent.getPermissions());
+
+            parentId = parent.getPageParent() != null ? parent.getPageParent().getId() : 0;
+        }
+        return result;
     }
 
     @Override
@@ -425,7 +487,7 @@ public class PageServiceImpl implements IPageService {
     }
 
     @Override
-    public Map<Long, Set<Pattern>> getDynamicUrl() throws PatternParseException {
-        return cacheableContentProvider.getDynamicUrl();
+    public Map<Long, Set<Pattern>> getDynamicUrlCached() throws PatternParseException {
+        return cacheablePageProvider.getDynamicUrl();
     }
 }

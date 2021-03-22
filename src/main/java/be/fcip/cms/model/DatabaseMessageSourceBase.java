@@ -1,4 +1,4 @@
-package be.fcip.cms.persistence.model;
+package be.fcip.cms.model;
 
 import be.fcip.cms.persistence.service.IMessageService;
 import be.fcip.cms.util.ApplicationUtils;
@@ -13,8 +13,7 @@ import java.util.Map;
 @Slf4j
 public class DatabaseMessageSourceBase extends AbstractMessageSource {
 
-    @Autowired
-    private IMessageService messageService;
+    @Autowired private IMessageService messageService;
 
     @Override
     protected MessageFormat resolveCode(String code, Locale locale) {

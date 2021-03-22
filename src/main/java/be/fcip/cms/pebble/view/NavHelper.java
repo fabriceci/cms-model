@@ -17,23 +17,22 @@ import java.util.Map;
 @Slf4j
 public class NavHelper {
 
-    @Autowired
-    private IPageService contentService;
+    @Autowired private IPageService contentService;
 
-    public String getBreadCrumb(PageEntity content, String locale, String seperator, Object parentId){
+    public String breadcrumb(PageEntity content, String locale, String seperator, Object parentId){
         Long parentIdLong = CmsNumericUtils.objectToLong(parentId);
-        return contentService.getBreadcrumb(content, locale, seperator, parentIdLong, false);
+        return contentService.getBreadcrumbCached(content, locale, seperator, parentIdLong, false);
     }
 
-    public String getBreadCrumb(PageEntity content, String locale, String seperator, Object parentId, boolean h1){
+    public String breadcrumb(PageEntity content, String locale, String seperator, Object parentId, boolean h1){
         Long parentIdLong = CmsNumericUtils.objectToLong(parentId);
-        return contentService.getBreadcrumb(content, locale, seperator, parentIdLong, h1);
+        return contentService.getBreadcrumbCached(content, locale, seperator, parentIdLong, h1);
     }
 
-    public String getNavMenu() {
-        return getNavMenu(new HashMap<>());
+    public String menu() {
+        return menu(new HashMap<>());
     }
-    public String getNavMenu(Map<Object, Object> params){
+    public String menu(Map<Object, Object> params){
 
         Long contentId = CmsTypeUtils.toLong(params.get("contentId"));
         String locale =  CmsTypeUtils.localeToString(params.get("locale")).toString();
@@ -46,6 +45,6 @@ public class NavHelper {
         if(websiteId == null){
             websiteId = (Long)RequestContextHolder.currentRequestAttributes().getAttribute("websiteId", RequestAttributes.SCOPE_REQUEST);
         }
-        return contentService.getNav(contentId, locale, depth, currentId, onlyTitle, offsetRoots, limitRoots, websiteId);
+        return contentService.getNavCached(contentId, locale, depth, currentId, onlyTitle, offsetRoots, limitRoots, websiteId);
     }
 }

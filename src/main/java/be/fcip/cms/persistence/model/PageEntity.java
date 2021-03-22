@@ -1,14 +1,13 @@
 package be.fcip.cms.persistence.model;
 
+import be.fcip.cms.util.ApplicationUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.annotation.Nullable;
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -99,5 +98,12 @@ public class PageEntity extends AbstractTimestampEntity {
         pageContent.setPage(null);
         contentMap.remove(pageContent.getLanguage());
 
+    }
+
+    public String getName(){
+        if(contentMap == null || contentMap.size() == 0) return null;
+        if(contentMap.containsKey(ApplicationUtils.defaultLocale.toString()))
+            return contentMap.get(ApplicationUtils.defaultLocale.toString()).getTitle();
+        return contentMap.entrySet().iterator().next().getValue().getTitle();
     }
 }

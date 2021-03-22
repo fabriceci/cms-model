@@ -19,36 +19,19 @@ import java.util.Objects;
 @Slf4j
 public class BlockHelper {
 
-    @Autowired
-    private IBlockService blockService;
-    @Autowired
-    private IPeebleService peebleService;
+    @Autowired private IBlockService blockService;
+    @Autowired private IPeebleService peebleService;
 
-    public String getBlock(Long id) throws IOException{
-        return getBlock(id, null);
-    }
-
-    public String getBlock(Long id, Map<String, Object> model) throws IOException {
+    public String get(Long id, Map<String, Object> model) throws IOException {
         model = fillMap(model);
         BlockEntity blockEntity = blockService.findCached(id);
         if (blockEntity == null) return null;
-        return blockEntity.isDynamic() ? peebleService.parseBlock(blockEntity, model) : blockEntity.getContent();
-    }
-
-    public String getBlockByName(String name) throws IOException {
-        return getBlockByName(name, null);
-    }
-
-    public String getBlockByName(String name, Map<String, Object> model) throws IOException {
-        model = fillMap(model);
-        BlockEntity blockEntity = blockService.findByNameWithCache(name);
-        if (blockEntity == null) return null;
-        return blockEntity.isDynamic() ? peebleService.parseBlock(blockEntity, model) : blockEntity.getContent();
+        return blockEntity.isDynamic() ? peebleService.parseString(blockEntity.getContent(), model, "block_" + blockEntity.getId()) : blockEntity.getContent();
     }
 
     private Map<String, Object> fillMap(Map<String, Object> model){
         if(model == null){
-            model = new HashMap();
+            model = new HashMap<>();
         }
         HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
         peebleService.fillModelMap(model, request);

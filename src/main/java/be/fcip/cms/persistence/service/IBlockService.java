@@ -10,17 +10,9 @@ public interface IBlockService {
     BlockEntity find(Long id);
     BlockEntity findCached(Long id);
 
-    BlockEntity findByNameWithCache(String name);
-
     List<BlockEntity> findAll();
 
     String jsonBlockArray(String type, boolean canDelete);
-
-    List<Number> getRevisionNumberList(Long id);
-
-    BlockEntity getRevisionEntity(Number id);
-
-    Object[] getRevision(Number id);
 
     // save & delete
     @PreAuthorize("hasRole('ROLE_ADMIN_BLOCK_DELETE')")

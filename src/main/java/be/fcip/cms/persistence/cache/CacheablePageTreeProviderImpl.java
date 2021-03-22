@@ -3,12 +3,10 @@ package be.fcip.cms.persistence.cache;
 import be.fcip.cms.model.tree.TreeItem;
 import be.fcip.cms.persistence.model.PageContentEntity;
 import be.fcip.cms.persistence.model.PageEntity;
+import be.fcip.cms.persistence.model.WebsiteEntity;
 import be.fcip.cms.persistence.repository.IPageRepository;
-import be.fcip.cms.persistence.service.IAppParamService;
-import be.fcip.cms.util.ApplicationUtils;
-import be.fcip.cms.util.CmsContentUtils;
-import be.fcip.cms.util.CmsUtils;
-import be.fcip.cms.util.WebConfigConstants;
+import be.fcip.cms.persistence.service.IWebsiteService;
+import be.fcip.cms.util.*;
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,14 +21,9 @@ import java.util.*;
 @Transactional
 public class CacheablePageTreeProviderImpl implements ICacheablePageTreeProvider {
 
-    @Autowired
-    private ICacheablePageProvider cachableContentProvider;
-
-    @Autowired
-    private IPageRepository pageRepository;
-
-    @Autowired
-    private IAppParamService appParamService;
+    @Autowired private ICacheablePageProvider cachableContentProvider;
+    @Autowired private IPageRepository pageRepository;
+    @Autowired private IWebsiteService websiteService;
 
     
     @Value("${cms.lang.default}")
@@ -78,8 +71,8 @@ public class CacheablePageTreeProviderImpl implements ICacheablePageTreeProvider
 
     @Override
     @Cacheable(value = "pageGlobal")
-    public String getMenu(Long contentId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId) {
-        List<PageEntity> rootsByContentIdCustom = pageRepository.findRootsByContentIdCustom(contentId, lang,
+    public String getMenu(Long pageId, String lang, long depth, Long currentPageId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId) {
+        List<PageEntity> rootsByContentIdCustom = pageRepository.findRootsByPageIdCustom(pageId, lang,
                 true, websiteId);
         List<PageEntity> roots = new ArrayList<>();
         int cpt = 0;
@@ -99,7 +92,7 @@ public class CacheablePageTreeProviderImpl implements ICacheablePageTreeProvider
 
 
         StringBuilder sb = new StringBuilder();
-        buildNavMenu(roots, sb, lang, depth, currentContentId, onlyTitle);
+        buildNavMenu(roots, sb, lang, depth, currentPageId, onlyTitle);
         return sb.toString();
     }
 
@@ -151,16 +144,18 @@ public class CacheablePageTreeProviderImpl implements ICacheablePageTreeProvider
                                  String seperator, boolean h1) {
 
         PageEntity content = cachableContentProvider.findContent(contentId);
+        WebsiteEntity website = websiteService.findAllCached().get(content.getWebsite().getId());
         PageContentEntity data = content.getContentMap().get(locale);
         HashMap<String, Object> map = CmsContentUtils.parseData(data.getData());
         String title =  data.getTitle();
         if(h1){
             if(!StringUtils.isEmpty((String) map.get("seo_h1"))){
                 title = (String)map.get("seo_h1");
-            } else if(!StringUtils.isEmpty(appParamService.getParam("seo_h1", locale))){
-                String seo_h1 = appParamService.getParam("seo_h1", locale);
-                appParamService.getParamsCached().put("title", title);
-                title = appParamService.replaceTokenByParam(seo_h1, locale);
+            } else if(!StringUtils.isEmpty(website.findTranslatableProperty("seo_h1", locale))){
+                String seo_h1 = website.findTranslatableProperty("seo_h1", locale);
+                Map<String, String> seoMap = website.getSeoMap(locale);
+                seoMap.put("title", title);
+                title = CmsTokenUtils.parse(seo_h1, seoMap);
             }
         }
 

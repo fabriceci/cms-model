@@ -12,18 +12,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class CacheableBlockProviderImpl implements ICacheableBlockProvider {
 
-    @Autowired
-    private IBlockRepository blockRepository;
+    @Autowired private IBlockRepository blockRepository;
 
     @Override
     @Cacheable(value = "block", key = "#id")
     public BlockEntity find(Long id) {
         return ImmutableProxy.create(blockRepository.findById(id).orElse(null));
-    }
-
-    @Override
-    @Cacheable(value = "block", key = "#name")
-    public BlockEntity findByName(String name) {
-        return ImmutableProxy.create(blockRepository.findByName(name));
     }
 }

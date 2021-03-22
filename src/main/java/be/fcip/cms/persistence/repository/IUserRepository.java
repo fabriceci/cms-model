@@ -12,6 +12,7 @@ import java.util.List;
 
 public interface IUserRepository extends JpaRepository<UserEntity, Long>, QuerydslPredicateExecutor<UserEntity>, IUserRepositoryCustom {
 
+    List<UserEntity> findAllByGroupsName(String groupName);
     List<UserEntity> findAllByEnabledIsFalse();
 
     List<UserEntity> findAllByAccountNonLockedIsFalse();
@@ -27,8 +28,4 @@ public interface IUserRepository extends JpaRepository<UserEntity, Long>, Queryd
     void updateAccountLocked(@Param("isNonLocked") boolean isNonLocked, @Param("username") String username);
 
     UserEntity findByEmail(String email);
-
-    @Modifying
-    @Query("delete from UserEntity u where u.email != :email")
-    void deleteAllNonadmin(@Param("email") String email);
 }

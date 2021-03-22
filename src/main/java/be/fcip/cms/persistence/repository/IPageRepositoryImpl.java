@@ -157,7 +157,7 @@ public class IPageRepositoryImpl implements IPageRepositoryCustom {
     }
 
     @Override
-    public List<PageEntity> findRootsByContentIdCustom(Long contentId, String locale, boolean onlyMenuItem, Long websiteId) {
+    public List<PageEntity> findRootsByPageIdCustom(Long contentId, String locale, boolean onlyMenuItem, Long websiteId) {
         QPageEntity PageEntity = QPageEntity.pageEntity;
         QPageContentEntity PageContentEntity = QPageContentEntity.pageContentEntity;
 

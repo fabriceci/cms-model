@@ -2,13 +2,11 @@ package be.fcip.cms.service;
 
 import be.fcip.cms.exception.ResourceNotFoundException;
 import be.fcip.cms.persistence.model.*;
-import be.fcip.cms.persistence.service.IAppParamService;
-import be.fcip.cms.persistence.service.IBlockService;
-import be.fcip.cms.persistence.service.IPageService;
-import be.fcip.cms.persistence.service.IPageTemplateService;
+import be.fcip.cms.persistence.service.*;
 import be.fcip.cms.util.ApplicationUtils;
 import be.fcip.cms.util.CmsContentUtils;
 import be.fcip.cms.util.CmsSecurityUtils;
+import be.fcip.cms.util.CmsTokenUtils;
 import com.mitchellbosecke.pebble.error.PebbleException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +18,6 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -34,43 +30,31 @@ import java.util.Map;
 @Service
 public class RenderPageServiceImpl implements IRenderPageService {
 
-    @Autowired
-    private IPageService contentService;
-    @Autowired
-    private IPageTemplateService contentTemplateService;
-    @Autowired
-    private IAppParamService appParamService;
-    @Autowired
-    private IBlockService blockService;
-    @Autowired
-    private IPeebleService peebleService;
-    @Autowired
-    private CacheManager cacheManager;
+    @Autowired private IPageService contentService;
+    @Autowired private IPageTemplateService contentTemplateService;
+    @Autowired private IWebsiteService websiteService;
+    @Autowired private IPeebleService peebleService;
+    @Autowired private CacheManager cacheManager;
 
     @Override
     public String renderPage(HttpServletRequest request, HttpServletResponse response, PageEntity content, ModelMap model) throws IOException, PebbleException, ServletException {
 
         Locale locale = LocaleContextHolder.getLocale();
         if(content == null) throw new IllegalArgumentException();
-        if(!ApplicationUtils.websites.containsKey(content.getWebsite().getId())) throw new IllegalArgumentException();
-        if(CmsSecurityUtils.uriIsAdmin(request))  throw new ResourceNotFoundException();
-        WebsiteEntity websiteEntity = ApplicationUtils.websites.get(content.getWebsite().getId());
-        RequestContextHolder.getRequestAttributes().setAttribute("websiteId", websiteEntity.getId(), RequestAttributes.SCOPE_REQUEST);
-        model.put("websiteId", websiteEntity.getId());
-        if(appParamService.isMaintenance()){
-            model.put("maintenance", true);
-        }
 
+        if(CmsSecurityUtils.uriIsAdmin(request))  throw new ResourceNotFoundException();
+        WebsiteEntity websiteEntity = websiteService.findAllCached().get(content.getWebsite().getId());
+        request.setAttribute("websiteId", websiteEntity.getId()); // used in view helpers
+        model.put("website", websiteEntity);
         PageContentEntity contentData= null;
         PageTemplateEntity contentTemplateDto = null;
 
         String templateName = "";
 
         contentData = content.getContentMap().get(locale.toString());
-        contentTemplateDto = contentTemplateService.find(content.getTemplate().getId());
+        contentTemplateDto = contentTemplateService.findCached(content.getTemplate().getId());
         templateName = contentTemplateDto.getName().toLowerCase();
         model.put("template", contentTemplateDto);
-        model.put("templateName", contentTemplateDto.getName());
 
         // cache check
         UserEntity currentUser = CmsSecurityUtils.getCurrentUser();
@@ -90,7 +74,7 @@ public class RenderPageServiceImpl implements IRenderPageService {
             throw new ResourceNotFoundException();
         }
 
-        if(contentService.contentIsPrivate(content)){
+        if(contentService.pageIsPrivate(content)){
             if(!CmsSecurityUtils.hasRole("ROLE_MEMBER")) {
                 //response.sendRedirect("/login");
                 new HttpSessionRequestCache().saveRequest(request, response);
@@ -120,45 +104,45 @@ public class RenderPageServiceImpl implements IRenderPageService {
 
         // SEO FIELDS (defined here to be overridable in IModelExtension hook)
         model.put("title", contentData.getTitle());
-        model.put(IAppParamService.PARAM_SEO_IMAGE, appParamService.getParam(IAppParamService.PARAM_SEO_IMAGE));
-        fillSeo(model, contentData, data);
+        model.put("seo_image", websiteEntity.getImage());
+        fillSeo(model, contentData, data, websiteEntity);
 
-        model.put("contentData", contentData);
-        model.put("content", content);
+        model.put("pageContent", contentData);
+        model.put("page", content);
 
         peebleService.fillModelMap(model, request);
 
         // Pas grave pour les perfs car les blocks seront dans le cache
-        BlockEntity master = null;
-        master = blockService.findCached(ApplicationUtils.websites.get(content.getWebsite().getId()).getMaster().getId());
-
-        model.put("main",  peebleService.parseBlock(contentTemplateDto.getBlock(), model));
+        model.put("main",  peebleService.parseString(contentTemplateDto.getTemplate(), model, "template_" + contentTemplateDto.getId()));
 
         StringBuilder include_top = new StringBuilder();
         StringBuilder include_bottom = new StringBuilder();
 
         if(!StringUtils.isEmpty(contentTemplateDto.getIncludeTop())){
-            include_top.append(contentTemplateDto.getIncludeTop());
+            include_top.append(peebleService.parseString(contentTemplateDto.getIncludeTop(), model, "template_" + contentTemplateDto.getId() + "_top"));
         }
         if(!StringUtils.isEmpty(content.getIncludeTop())){
-            include_top.append('\n').append(content.getIncludeTop());
+            include_top.append('\n').append(peebleService.parseString(content.getIncludeTop(), model, content.getId() + "_top"));
         }
 
         if(!StringUtils.isEmpty(contentTemplateDto.getIncludeBottom())){
-            include_bottom.append(contentTemplateDto.getIncludeBottom());
+            include_bottom.append( peebleService.parseString(contentTemplateDto.getIncludeBottom(), model, "template_" + contentTemplateDto.getId() + "_bot"));
+
         }
         if(!StringUtils.isEmpty(content.getIncludeBottom())){
             include_bottom.append('\n').append(content.getIncludeBottom());
+            include_top.append('\n').append(peebleService.parseString(content.getIncludeBottom(), model, content.getId() + "_bot"));
         }
 
         if(!StringUtils.isEmpty(include_top)){
-            model.put("include_top", peebleService.parseString(include_top.toString(), model) );
+            model.put("include_top", include_top.toString());
         }
         if(!StringUtils.isEmpty(include_bottom)) {
-            model.put("include_bottom", peebleService.parseString(include_bottom.toString(), model));
+            model.put("include_bottom", include_bottom.toString());
         }
 
-        final String result = peebleService.parseBlock(master, model);
+        // to do add key
+        final String result = peebleService.parseString(websiteEntity.getTemplate(), model, "website_tpl_" + websiteEntity.getId());
         if((currentUser == null) && contentTemplateDto.isFullCache() && !ApplicationUtils.isDev){
             cacheManager.getCache("pageFull").put(cacheKey, result);
         } else if((currentUser == null) && contentTemplateDto.isShortCache() && !ApplicationUtils.isDev){
@@ -168,22 +152,20 @@ public class RenderPageServiceImpl implements IRenderPageService {
     }
 
     private static String[] APP_PARAMS_META_NAME = {"seo_tags", "seo_description", "seo_title", "seo_h1"};
-    private void fillSeo(ModelMap model, PageContentEntity contentData, HashMap<String, Object> data) {
-        Map<String, String> paramsMap = appParamService.getParamsCached();
-        // DIRTY HACK - the map is singleton, I add the title in it to use in replaceTokenByParam
-        paramsMap.put("title", contentData.getTitle());
+    private void fillSeo(ModelMap model, PageContentEntity contentData, HashMap<String, Object> data, WebsiteEntity websiteEntity) {
+        Map<String, String> seoMap = websiteEntity.getSeoMap(contentData.getLanguage());
+        seoMap.put("title", contentData.getTitle());
         for (String paramName : APP_PARAMS_META_NAME) {
             // 1. Check if the page override the default value
             if(data.containsKey(paramName) && !StringUtils.isEmpty((String)data.get(paramName))){
                 model.put(paramName, data.get(paramName));
             } else { // 2. Look at the default SEO values
-                String result = appParamService.getParam(paramName, contentData.getLanguage());
+                String result = websiteEntity.findTranslatableProperty(paramName, contentData.getLanguage());
                 // 3. If we have a default parameter and not seo_tags (that not need processing)
                 if(!paramName.equals("seo_tags") && !StringUtils.isEmpty(result)) {
-                    result = appParamService.replaceTokenByParam(result, contentData.getLanguage());
+                    result = CmsTokenUtils.parse(result, seoMap);
                 }
                 model.put(paramName, result);
-
             }
         }
     }

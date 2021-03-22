@@ -1,6 +1,5 @@
 package be.fcip.cms.persistence.service;
 
-import be.fcip.cms.persistence.cache.ICacheablePageProvider;
 import be.fcip.cms.persistence.model.PageFileEntity;
 import be.fcip.cms.persistence.repository.IPageFileRepository;
 import be.fcip.cms.util.FileExtensionUtils;
@@ -24,10 +23,8 @@ import java.util.Optional;
 @Slf4j
 public class FileServiceImpl implements IFileService {
 
-    @Autowired
-    private IPageFileRepository pageFileRepository;
-    @Autowired
-    private IPageService pageService;
+    @Autowired private IPageFileRepository pageFileRepository;
+    @Autowired private IPageService pageService;
 
     @Override
     public PageFileEntity findOne(Long id) {

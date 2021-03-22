@@ -1,6 +1,6 @@
 package be.fcip.cms.util;
 
-import be.fcip.cms.persistence.model.JsonErrorResponse;
+import be.fcip.cms.model.JsonErrorResponse;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.lang3.StringUtils;

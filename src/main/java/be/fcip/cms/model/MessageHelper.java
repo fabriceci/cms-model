@@ -1,4 +1,4 @@
-package be.fcip.cms.persistence.model;
+package be.fcip.cms.model;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +10,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class MessageHelper {
 
-    @Autowired
-    private MessageSource messageSource;
+    @Autowired private MessageSource messageSource;
 
     public String message(String key){
 

@@ -17,8 +17,7 @@ import java.util.Set;
 @Service
 public class CacheableMessageProviderImpl implements ICacheableMessageProvider {
 
-    @Autowired
-    private IWordRepository messageRepository;
+    @Autowired private IWordRepository messageRepository;
 
     @Override
     @Cacheable(value = "global", key="'messages'")

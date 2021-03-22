@@ -7,12 +7,10 @@ import java.util.List;
 
 public interface ICmsFieldService {
 
-    List<CmsFieldEntity> saveCmsField(List<CmsFieldEntity> list);
-
     CmsFieldEntity findCmsField(Long id);
 
     String jsonCmsField();
-    List<CmsFieldEntity> findAllCmsField();
+    List<CmsFieldEntity> findAllCmsFieldCached();
     @PreAuthorize("hasRole('ROLE_SUPER_ADMIN')")
     void deleteCmsField(Long id) throws Exception;
     @PreAuthorize("hasRole('ROLE_SUPER_ADMIN')")

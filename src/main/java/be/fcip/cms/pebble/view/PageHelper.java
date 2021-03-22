@@ -22,108 +22,107 @@ import java.util.Map;
 
 @Component
 @Slf4j
-public class ContentHelper {
+public class PageHelper {
 
-    @Autowired
-    private IPageService contentService;
+    @Autowired private IPageService pageService;
 
     public static String humanSize(Long value){
         return FileUtils.byteCountToDisplaySize(value);
     }
 
     // Static Block
-    public static List<PageFileEntity> getFilesList(PageContentEntity data, String type) {
+    public static List<PageFileEntity> filesList(PageContentEntity data, String type) {
         return CmsContentUtils.filesList(data, type);
     }
 
-    public static Map<String, List<PageFileEntity>> getFilesByGroupMap(PageContentEntity data, String type){
+    public static Map<String, List<PageFileEntity>> filesByGroupMap(PageContentEntity data, String type){
         return CmsContentUtils.filesByGroupMap(data, type);
     }
-    public static HashMap<String, Object> getPageData(PageContentEntity contentData){
+    public static HashMap<String, Object> pageData(PageContentEntity contentData){
         HashMap<String, Object> map = CmsContentUtils.parseData(contentData.getData());
         return map;
     }
 
-    public static HashMap<String, Object> getPageData(PageEntity content, String locale){
-        PageContentEntity contentData = content.getContentMap().get(locale);
+    public static HashMap<String, Object> pageData(PageEntity pageEntity, String locale){
+        PageContentEntity contentData = pageEntity.getContentMap().get(locale);
         return (contentData != null) ? CmsContentUtils.parseData(contentData.getData()) : null;
     }
     // end static block
 
-    public HashMap<String, Object> getPageData(Long id){
+    public HashMap<String, Object> pageData(Long id){
 
-        PageContentEntity contentData = contentService.findContentData(id);
+        PageContentEntity contentData = pageService.findPageContent(id);
         return (contentData != null) ? CmsContentUtils.parseData(contentData.getData()) : null;
     }
 
-    public HashMap<String, Object> getPageData(Long id, String locale){
+    public HashMap<String, Object> pageData(Long id, String locale){
 
-        PageEntity content = contentService.findContent(id);
+        PageEntity content = pageService.findPageCached(id);
         PageContentEntity contentData = content.getContentMap().get(locale);
         return (contentData != null) ? CmsContentUtils.parseData(contentData.getData()) : null;
     }
 
-    public List<PageContentEntity> getChildrensData(Long id, String code){
-        return getChildrensData(contentService.findContent(id), code);
+    public List<PageContentEntity> childrens(Long id, String code){
+        return childrens(pageService.findPageCached(id), code);
     }
 
-    public List<PageContentEntity> getChildrensData(PageEntity entity, String code){
+    public List<PageContentEntity> childrens(PageEntity entity, String code){
         List<PageContentEntity> result = new ArrayList<>();
         PageContentEntity data;
         for (PageEntity children : entity.getPageChildren()) {
-            PageEntity contentAdmin = contentService.findContent(children.getId());
-            data = contentAdmin.getContentMap().get(code);
+            PageEntity childrenEntity = pageService.findPageCached(children.getId());
+            data = childrenEntity.getContentMap().get(code);
             if(data != null) result.add(data);
         }
         return result;
     }
 
-    public List<PageContentEntity> getBrothersData(PageEntity entity, String code, boolean selfInclude){
+    public List<PageContentEntity> brothers(PageEntity entity, String code, boolean selfInclude){
         List<PageContentEntity> result = new ArrayList<>();
-        PageEntity parent = contentService.findContent(entity.getPageParent().getId());
+        PageEntity parent = pageService.findPageCached(entity.getPageParent().getId());
         PageContentEntity data;
-        for (PageEntity c : contentService.findParents(parent)) {
+        for (PageEntity c : pageService.findParents(parent)) {
             if(!selfInclude) {
                 if (c.getId() == entity.getId())
                     continue;
             }
-            PageEntity contentAdmin = contentService.findContent(c.getId());
+            PageEntity contentAdmin = pageService.findPageCached(c.getId());
             data = contentAdmin.getContentMap().get(code);
             if(data != null ) result.add(data);
         }
         return result;
     }
 
-    public List<PageContentEntity> getParentsData(PageEntity entity, String code){
+    public List<PageContentEntity> parents(PageEntity entity, String code){
         List<PageContentEntity> result = new ArrayList<>();
         if(entity.getPageParent() == null) return null;
 
-        PageEntity parent = contentService.findContent(entity.getPageParent().getId());
-        parent = contentService.findContent(parent.getPageParent().getId());
+        PageEntity parent = pageService.findPageCached(entity.getPageParent().getId());
+        parent = pageService.findPageCached(parent.getPageParent().getId());
 
         PageContentEntity data;
-        for (PageEntity c : contentService.findParents(parent)) {
+        for (PageEntity c : pageService.findParents(parent)) {
 
-            PageEntity contentAdmin = contentService.findContent(c.getId());
-            data = contentAdmin.getContentMap().get(code);
+            PageEntity pageParent = pageService.findPageCached(c.getId());
+            data = pageParent.getContentMap().get(code);
             if(data != null) result.add(data);
         }
         return result;
     }
 
-    public PageContentEntity getNextBrotherData(PageEntity entity, String code) {
-        PageEntity parent = contentService.findContent(entity.getPageParent().getId());
+    public PageContentEntity nextBrother(PageEntity entity, String code) {
+        PageEntity parent = pageService.findPageCached(entity.getPageParent().getId());
         PageContentEntity nextData = null;
         boolean next = false;
         PageContentEntity data;
-        for (PageEntity c : contentService.findParents(parent)) {
+        for (PageEntity c : pageService.findParents(parent)) {
             if (c.getId() == entity.getId()) {
                 next = true;
                 continue;
             }
 
             if (next) {
-                PageEntity contentAdmin = contentService.findContent(c.getId());
+                PageEntity contentAdmin = pageService.findPageCached(c.getId());
                 data = contentAdmin.getContentMap().get(code);
                 if (data != null) {
                     nextData = data;
@@ -134,35 +133,35 @@ public class ContentHelper {
         return nextData;
     }
 
-    public PageContentEntity getPreviousBrotherData(PageEntity entity, String code){
+    public PageContentEntity previousBrother(PageEntity entity, String code){
         if(entity == null) return null;
-        PageEntity parent = contentService.findContent(entity.getPageParent().getId());
+        PageEntity parent = pageService.findPageCached(entity.getPageParent().getId());
         PageContentEntity previousData = null;
         PageContentEntity data;
-        for (PageEntity c : contentService.findParents(parent)) {
+        for (PageEntity c : pageService.findParents(parent)) {
             if(c.getId() == entity.getId()) {
                 break;
             }
 
-            PageEntity contentAdmin = contentService.findContent(c.getId());
+            PageEntity contentAdmin = pageService.findPageCached(c.getId());
             data = contentAdmin.getContentMap().get(code);
             if(data != null) previousData=data;
         }
         return previousData;
     }
 
-    public PageContentEntity getContentData(Long id, String code){
-        PageEntity contentAdmin = contentService.findContent(id);
+    public PageContentEntity getContent(Long id, String code){
+        PageEntity contentAdmin = pageService.findPageCached(id);
         if (contentAdmin == null) return null;
 
         return contentAdmin.getContentMap().get(code);
     }
 
-    public PageEntity getContent(Long id){
-        return contentService.findContent(id);
+    public PageEntity get(Long id){
+        return pageService.findPageCached(id);
     }
 
-    public PageableResult<PageEntity> findWebContent(String locale, List<TaxonomyEntity> terms, String contentType, Long pageNumber, Long limit, Boolean isPrivate){
+    public PageableResult<PageEntity> find(String locale, List<TaxonomyEntity> terms, String contentType, Long pageNumber, Long limit, Boolean isPrivate){
         String result = null;
 
         if(terms != null && terms.size() > 0) {
@@ -179,19 +178,19 @@ public class ContentHelper {
         }
         Long date = null;
 
-        return contentService.findWebContent(locale, date, null, null, null, null, result , contentType, pageNumber, limit, isPrivate);
+        return pageService.search(locale, date, null, null, null, null, result , contentType, pageNumber, limit, isPrivate);
     }
 
-    public PageableResult<PageEntity> findWebContent(String locale, LocalDateTime begin, LocalDateTime end, String name, String type, String category, String tags, String contentType, Object pageNumber, Long limit, Boolean isPrivate){
+    public PageableResult<PageEntity> find(String locale, LocalDateTime begin, LocalDateTime end, String name, String type, String category, String tags, String contentType, Object pageNumber, Long limit, Boolean isPrivate){
 
 
         Long page = CmsNumericUtils.objectToLong(pageNumber);
 
-        PageableResult<PageEntity> result = contentService.findWebContent(locale, begin, end, name, type, category, tags, contentType, page, limit, isPrivate);
+        PageableResult<PageEntity> result = pageService.search(locale, begin, end, name, type, category, tags, contentType, page, limit, isPrivate);
         return result;
     }
 
-    public PageableResult<PageEntity> findWebContent(String locale, String yearString, String name, String type, String category, String tags, String contentType, Object pageNumber, Long limit, Boolean isPrivate){
+    public PageableResult<PageEntity> find(String locale, String yearString, String name, String type, String category, String tags, String contentType, Object pageNumber, Long limit, Boolean isPrivate){
 
         Long page = CmsNumericUtils.objectToLong(pageNumber);
         if(page == null) page = 1L;
@@ -215,21 +214,21 @@ public class ContentHelper {
         PageableResult<PageEntity> result = null;
 
         if(yearEnd != null){
-            result = contentService.findWebContent(locale, yearStart, yearEnd, name, type, category, tags, contentType, page, limit, isPrivate);
+            result = pageService.search(locale, yearStart, yearEnd, name, type, category, tags, contentType, page, limit, isPrivate);
         } else {
-            result = contentService.findWebContent(locale, yearStart, name, type, category, tags, contentType, page, limit, isPrivate);
+            result = pageService.search(locale, yearStart, name, type, category, tags, contentType, page, limit, isPrivate);
         }
 
         return result;
     }
 
-    public PageableResult<PageEntity> findWebContent(String locale, String type, String contentType, Object pageNumber, Long limit){
+    public PageableResult<PageEntity> find(String locale, String type, String contentType, Object pageNumber, Long limit){
 
         Long page = CmsNumericUtils.objectToLong(pageNumber);
         if(page == null) page = 1L;
         if(pageNumber == null) pageNumber = 1L;
 
-        PageableResult<PageEntity> result = contentService.findWebContent(locale, type, contentType, page, limit);
+        PageableResult<PageEntity> result = pageService.search(locale, type, contentType, page, limit);
 
 
         return result;
@@ -238,5 +237,18 @@ public class ContentHelper {
     public static List<TaxonomyEntity> taxonomyByType(PageEntity content, String type){
         return CmsContentUtils.taxonomyByType(content, type);
     }
+
+    public boolean isPrivate(PageEntity page){
+        return pageService.pageIsPrivate(page);
+    }
+
+    public boolean isVisible(PageEntity page, PageContentEntity content){
+        return pageService.pageIsVisible(page, content);
+    }
+
+    public boolean canBeDeleted(PageEntity page, String lang){
+        return pageService.pageCanBeDeleted(page, lang);
+    }
+
 
 }

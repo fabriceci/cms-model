@@ -22,33 +22,35 @@ import java.util.Set;
 @Service(value = "taxonomyService")
 @Transactional
 public class TaxonomyServiceImpl implements ITaxonomyService {
-    @Autowired
-    private ITaxonomyRepository taxonomyTermRepository;
-    @Autowired
-    private IMessageService messageService;
-    @Autowired
-    private IPageService contentService;
-    @Autowired
-    private ICacheableTaxonomyProvider cacheableTaxonomyProvider;
+
+    @Autowired private ITaxonomyRepository taxonomyTermRepository;
+    @Autowired private IMessageService messageService;
+    @Autowired private IPageService contentService;
+    @Autowired private ICacheableTaxonomyProvider cacheableTaxonomyProvider;
 
     @Override
-    public List<TaxonomyEntity> findAll() {
+    public List<TaxonomyEntity> findAllCached() {
         return cacheableTaxonomyProvider.findAllTerm();
     }
 
     @Override
-    public List<String> findAllType() {
+    public List<String> findAllTypeCached() {
         return cacheableTaxonomyProvider.findAllType();
     }
 
     @Override
-    public List<TaxonomyEntity> findByType(String type) {
+    public List<TaxonomyEntity> findByTypeCached(String type) {
         return cacheableTaxonomyProvider.findByType(type);
     }
 
     @Override
+    public TaxonomyEntity findByType(String term, String type) {
+        return taxonomyTermRepository.findByNameAndTaxonomyTypeName(term.toLowerCase(), type);
+    }
+
+    @Override
     public String findByTypeJson(String type) {
-        List<TaxonomyEntity> terms = findByType(type);
+        List<TaxonomyEntity> terms = findByTypeCached(type);
         JsonArrayBuilder data = Json.createArrayBuilder();
         for (TaxonomyEntity term : terms) {
             data.add(term.getName());
@@ -79,7 +81,7 @@ public class TaxonomyServiceImpl implements ITaxonomyService {
                 Set<TaxonomyEntity> taxonomyTermEntities = content.getTaxonomyEntities();
                 taxonomyTermEntities.remove(one);
                 content.setTaxonomyEntities(taxonomyTermEntities);
-                contentService.saveContent(content);
+                contentService.savePage(content);
 
             }
             taxonomyTermRepository.deleteById(id);
@@ -90,11 +92,6 @@ public class TaxonomyServiceImpl implements ITaxonomyService {
     @Override
     public TaxonomyEntity findTermEntity(Long id) {
         return taxonomyTermRepository.findById(id).orElse(null);
-    }
-
-    @Override
-    public TaxonomyEntity findByType(String term, String type) {
-        return taxonomyTermRepository.findByNameAndTaxonomyTypeName(term.toLowerCase(), type);
     }
 
 

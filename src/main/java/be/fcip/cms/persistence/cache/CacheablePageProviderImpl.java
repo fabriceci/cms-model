@@ -8,13 +8,10 @@ import be.fcip.cms.persistence.repository.IPageRepository;
 import be.fcip.cms.util.ApplicationUtils;
 import be.fcip.cms.util.CmsContentUtils;
 import de.cronn.reflection.util.immutable.ImmutableProxy;
-import jdk.nashorn.internal.ir.annotations.Immutable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -23,13 +20,8 @@ import java.util.regex.PatternSyntaxException;
 @Service
 public class CacheablePageProviderImpl implements ICacheablePageProvider {
 
-    @Autowired
-    private IPageRepository contentRepository;
-    @Autowired
-    private IPageContentRepository contentDataRepository;
- 
-    @PersistenceContext(unitName = "core")
-    private EntityManager entityManager;
+    @Autowired private IPageRepository contentRepository;
+    @Autowired private IPageContentRepository contentDataRepository;
 
     @Cacheable(value = "page", key = "#slug + '_' + #locale.toString()")
     @Override

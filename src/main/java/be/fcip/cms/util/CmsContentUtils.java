@@ -1,5 +1,7 @@
 package be.fcip.cms.util;
 
+import be.fcip.cms.model.PageData;
+import be.fcip.cms.model.TemplateField;
 import be.fcip.cms.persistence.model.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -32,8 +34,7 @@ public class CmsContentUtils {
         return result;
     }
 
-    public static String computeSlug(final PageEntity content, final PageContentEntity contentData, final String locale, final PageEntity parent, final boolean forceLang) {
-        WebsiteEntity websiteEntity = ApplicationUtils.websites.get(content.getWebsite().getId());
+    public static String computeSlug(final PageEntity content, final PageContentEntity contentData, final String locale, final PageEntity parent, final boolean forceLang, WebsiteEntity websiteEntity) {
         if(websiteEntity==null || content == null || contentData == null || StringUtils.isEmpty(contentData.getSlug()) || StringUtils.isEmpty(locale)){
             throw new IllegalArgumentException("Content, contentData, slug and locale can't be null");
         }

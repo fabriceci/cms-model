@@ -29,11 +29,8 @@ public class MessageServiceImpl implements IMessageService {
     QWordEntity wordEntity = QWordEntity.wordEntity;
     QWordTranslationEntity translationEntity = QWordTranslationEntity.wordTranslationEntity;
 
-    @Autowired
-    private IWordRepository messageRepository;
-
-    @Autowired
-    private ICacheableMessageProvider cacheableMessageProvider;
+    @Autowired private IWordRepository messageRepository;
+    @Autowired private ICacheableMessageProvider cacheableMessageProvider;
 
     @PersistenceContext(unitName = "core")
     private EntityManager entityManager;

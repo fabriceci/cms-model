@@ -8,13 +8,8 @@ import org.springframework.cache.CacheManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Date;
-import java.util.Objects;
 
 @Slf4j
 public class CmsUtils {
@@ -24,29 +19,6 @@ public class CmsUtils {
     public final static String DATE_FORMAT = "yyyy-MM-dd";
 
     public final static String CONTENT_TYPE_PAGE = "PAGE";
-    public final static String CONTENT_TYPE_PAGE_LINK = "LINK";
-    public final static String CONTENT_TYPE_NEWS = "NEWS";
-    public final static String CONTENT_TYPE_ARTICLE = "ARTICLE";
-
-    public final static String BLOCK_TYPE_CONTENT = "PAGE";
-    public final static String BLOCK_TYPE_NAVIGATION = "NAV";
-    public final static String BLOCK_TYPE_CONTENT_TEMPLATE = "TEMPLATE";
-    public final static String BLOCK_TYPE_SYSTEM = "SYSTEM";
-    public final static String BLOCK_TYPE_FIELDSET = "FIELD";
-
-    public final static String BLOCK_TEMPLATE_BASIC_PAGE_NAME = "Template base";
-    public final static String BLOCK_TEMPLATE_WEBCONTENT_NAME = "Template webcontent";
-    public final static String BLOCK_TEMPLATE_LOGIN_NAME = "Login Page";
-
-    public final static String BLOCK_PAGE_MASTER_NAME = "Default Master Layout";
-    public final static String BLOCK_PAGE_ERROR_NAME = "Error Page (general)";
-    public final static String BLOCK_PAGE_ERROR404_NAME = "Error page (404)";
-    public final static String BLOCK_PAGE_MAINTENANCE_NAME = "Maintenance Page";
-
-    public final static String BLOCK_FIELD_TEXT_NAME = "Field text";
-    public final static String BLOCK_FIELD_TEXTAREA_NAME = "Field textarea";
-    public final static String BLOCK_FIELD_TINYMCE_NAME = "Field tinymce";
-    public final static String BLOCK_FIELD_DATEPICKER_NAME = "Field datepicker";
 
     public final static String FIELD_TYPE_STRING = "string";
     public final static String FIELD_TYPE_DATE = "date";

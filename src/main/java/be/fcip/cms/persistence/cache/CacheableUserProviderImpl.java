@@ -9,9 +9,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class CacheableUserProviderImpl implements ICacheableUserProvider {
 
-    @Autowired
-    private IUserRepository userRepository;
+    @Autowired private IUserRepository userRepository;
 
+    /**
+     * Note: Not immutable because spring security required this.
+     * @param email
+     * @return
+     */
     @Override
     @Cacheable(value = "user", key = "#email")
     public UserEntity findByUsernameOrEmail(String email) {

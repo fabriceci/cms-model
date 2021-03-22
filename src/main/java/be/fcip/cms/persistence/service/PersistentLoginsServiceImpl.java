@@ -14,8 +14,7 @@ import java.util.Date;
 @Transactional
 public class PersistentLoginsServiceImpl implements PersistentTokenRepository {
 
-    @Autowired
-    private IPersistentLoginsRepository persistentLoginsRepository;
+    @Autowired private IPersistentLoginsRepository persistentLoginsRepository;
 
     @Override
     public void createNewToken(PersistentRememberMeToken token) {

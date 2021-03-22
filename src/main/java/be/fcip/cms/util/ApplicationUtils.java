@@ -1,14 +1,14 @@
 package be.fcip.cms.util;
 
-import be.fcip.cms.persistence.model.WebsiteEntity;
+import be.fcip.cms.persistence.model.PermissionEntity;
+import be.fcip.cms.persistence.repository.IPermissionRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpRequest;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -28,9 +28,7 @@ public class ApplicationUtils {
     public static boolean isDev;
     public static boolean forceLangInUrl;
     public static boolean publicMember;
-
     public static List<GrantedAuthority> rolesList;
-    public static Map<Long, WebsiteEntity> websites;
 
     static{
         // Load Properties
@@ -69,10 +67,6 @@ public class ApplicationUtils {
     }
 
     public static Locale getLocale(Locale locale){
-        // HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
-        // if(request != null && request.getRequestURI().startsWith("/admin")){
-        //    return adminLocales.contains(locale) ? locale : defaultAdminLocale;
-        //}
         return locales.contains(locale) ? locale : defaultLocale;
     }
 
@@ -87,31 +81,12 @@ public class ApplicationUtils {
         return adminLocales.contains(locale) ? locale : defaultAdminLocale;
     }
 
-    public static WebsiteEntity getWebsiteFromUrl(HttpServletRequest request){
-        return getWebsiteFromUrl(request.getRequestURI());
-    }
-
-    public static WebsiteEntity getWebsiteFromUrl(String path){
-        int cpt = 0;
-        for (WebsiteEntity website : ApplicationUtils.websites.values()) {
-            if (cpt == 0) {
-                cpt++; // skip first
-                continue;
-            }
-            if(ApplicationUtils.forceLangInUrl){
-                for (Locale siteLocale : ApplicationUtils.locales) {
-                    if (path.startsWith("/" + siteLocale + website.getSlug())) {
-                        return website;
-                    }
-                }
-
-            } else {
-                if (path.startsWith(website.getSlug())) {
-                    return website;
-                }
-            }
-
+    public synchronized static void refreshPermission(IPermissionRepository repository){
+        // load all privilege
+        final List<GrantedAuthority> authorities = new ArrayList<>();
+        for (PermissionEntity roleEntity : repository.findAll()) {
+            authorities.add(new SimpleGrantedAuthority(roleEntity.getName()));
         }
-        return websites.get(1L);
+        rolesList = Collections.synchronizedList(authorities);
     }
 }

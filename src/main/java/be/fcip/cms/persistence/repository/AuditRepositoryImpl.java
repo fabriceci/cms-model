@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,11 +23,11 @@ public class AuditRepositoryImpl implements IAuditRepository {
     @PersistenceContext(unitName = "core")
     private EntityManager entityManager;
 
-    public final static String FIND_OLD_CONTENTDATA_QUERY = "SELECT c.id, c.rev, r.timestamp FROM page_content_AUD c JOIN REVINFO r ON r.id = c.rev WHERE r.timestamp < :max";
-    public final static String FIND_OLD_BLOCK_QUERY = "SELECT c.id, c.rev, r.timestamp FROM block_AUD c JOIN REVINFO r ON r.id = c.rev WHERE r.timestamp < :max";
-    public final static String DELETE_OLD_CONTENTDATA_QUERY = "DELETE FROM page_content_AUD WHERE REV IN (:ids)";
-    public final static String DELETE_OLD_BLOCK_QUERY = "DELETE FROM block_AUD WHERE REV IN (:ids)";
-    public final static String DELETE_REVINFO_QUERY = "DELETE FROM REVINFO WHERE id IN (:ids)";
+    private final static String FIND_OLD_AUD = "SELECT c.id, c.rev, r.timestamp FROM %s c JOIN REVINFO r ON r.id = c.rev WHERE r.timestamp < :max";
+    private final static String DELETE_AUD = "DELETE FROM %s WHERE REV IN (:ids)";
+    private final static String DELETE_REVINFO_QUERY = "DELETE FROM REVINFO WHERE id IN (:ids)";
+    public final static List<String> AUDITED_TABLE = Arrays.asList("page_template_AUD", "page_content_AUD", "block_AUD", "website_AUD");
+
 
     @Override
     public Object getRevisionEntity(Class requestedClass, Number id) {
@@ -71,34 +72,20 @@ public class AuditRepositoryImpl implements IAuditRepository {
     }
 
     @Override
-    public List<Object[]> findOldContentData(Date maxDate) {
-        Query q = entityManager.createNativeQuery(FIND_OLD_CONTENTDATA_QUERY);
+    public List<Object[]> findAuditedExpired(Date maxDate, String tableName) {
+        Query q = entityManager.createNativeQuery(String.format(FIND_OLD_AUD, tableName));
         q.setParameter("max", maxDate.getTime());
         return q.getResultList();
     }
 
     @Override
-    public void deleteOldContentData(List<Long> ids) {
+    public void deleteAudits(List<Long> ids, String tableName) {
         if(ids!= null && !ids.isEmpty()) {
-            Query deleteAudit = entityManager.createNativeQuery(DELETE_OLD_CONTENTDATA_QUERY);
+            Query deleteAudit = entityManager.createNativeQuery(String.format(DELETE_AUD, tableName));
             executeDeleteAudit(deleteAudit, ids);
         }
     }
 
-    @Override
-    public List<Object[]> findOldBlockData(Date maxDate) {
-        Query q = entityManager.createNativeQuery(FIND_OLD_BLOCK_QUERY);
-        q.setParameter("max", maxDate.getTime());
-        return q.getResultList();
-    }
-
-    @Override
-    public void deleteOldBlock(List<Long> ids) {
-        if(ids!= null && !ids.isEmpty()) {
-            Query deleteBlock = entityManager.createNativeQuery(DELETE_OLD_BLOCK_QUERY);
-            executeDeleteAudit(deleteBlock, ids);
-        }
-    }
 
     private void executeDeleteAudit(Query deleteAudit, List<Long> ids){String idStr = ids.stream().map(Object::toString).collect(Collectors.joining(","));
         Query revInfo = entityManager.createNativeQuery(DELETE_REVINFO_QUERY);
