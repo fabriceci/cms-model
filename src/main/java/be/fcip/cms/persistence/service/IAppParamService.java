@@ -30,7 +30,7 @@ public interface IAppParamService {
     default Set<String> getCoreParams(){ return CORE_PARAMS; }
 
     Optional<AppParamEntity> findOne(String id);
-    Map<String, String> getParams();
+    Map<String, String> getParamsCached();
     void delete(String id);
     void delete(AppParamEntity param);
     AppParamEntity save(AppParamEntity param);

@@ -39,12 +39,12 @@ public class BlockServiceImpl implements IBlockService {
     private CacheManager cacheManager;
 
     @Override
-    public BlockEntity findWithoutCache(Long id) {
+    public BlockEntity find(Long id) {
         return blockRepository.findById(id).orElse(null);
     }
 
     @Override
-    public BlockEntity findWithCache(Long id) {
+    public BlockEntity findCached(Long id) {
         return cacheableBlockProvider.find(id);
     }
 

@@ -91,7 +91,7 @@ public class MessageServiceImpl implements IMessageService {
     }
 
     @Override
-    public Map<String, Map<String, String>> mapOfTranslation() {
+    public Map<String, Map<String, String>> mapOfTranslationCached() {
         return cacheableMessageProvider.mapOfTranslation();
     }
 

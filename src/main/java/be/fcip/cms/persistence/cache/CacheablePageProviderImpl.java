@@ -7,6 +7,8 @@ import be.fcip.cms.persistence.repository.IPageContentRepository;
 import be.fcip.cms.persistence.repository.IPageRepository;
 import be.fcip.cms.util.ApplicationUtils;
 import be.fcip.cms.util.CmsContentUtils;
+import de.cronn.reflection.util.immutable.ImmutableProxy;
+import jdk.nashorn.internal.ir.annotations.Immutable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -14,10 +16,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -35,13 +34,13 @@ public class CacheablePageProviderImpl implements ICacheablePageProvider {
     @Cacheable(value = "page", key = "#slug + '_' + #locale.toString()")
     @Override
     public Long findContentId(String slug, Locale locale) {
-        return contentDataRepository.findContentIdByComputedSlugAndLanguageLocale(slug, locale.toString());
+        return ImmutableProxy.create(contentDataRepository.findContentIdByComputedSlugAndLanguageLocale(slug, locale.toString()));
     }
 
     @Cacheable(value = "page", key = "#id")
     @Override
     public PageEntity findContent(Long id) {
-        return contentRepository.findContentCustom(id);
+        return ImmutableProxy.create(contentRepository.findContentCustom(id));
     }
 
     @Override
@@ -57,7 +56,7 @@ public class CacheablePageProviderImpl implements ICacheablePageProvider {
         pageablePageEntity.setTotalPage(queryResult.getTotalPage());
         pageablePageEntity.setTotalResult(queryResult.getTotalResult());
 
-        return pageablePageEntity;
+        return ImmutableProxy.create(pageablePageEntity);
     }
 
     @Override
@@ -71,6 +70,6 @@ public class CacheablePageProviderImpl implements ICacheablePageProvider {
                 map.put(page.getId(), patterns);
             }
         }
-        return map;
+        return Collections.unmodifiableMap(map);
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +40,6 @@ public class CacheableMessageProviderImpl implements ICacheableMessageProvider {
 
             result.put(message.getWordKey(), mapLang);
         }
-        return result;
+        return Collections.unmodifiableMap(result);
     }
 }

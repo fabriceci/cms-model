@@ -52,7 +52,7 @@ public interface IPageService {
 
     PageContentEntity findContentData(Long id);
 
-    PageEntity findBySlug(String slug, Locale locale);
+    PageEntity findBySlugCached(String slug, Locale locale);
 
     Collection<PermissionEntity> getRoleForContent(PageEntity content);
 

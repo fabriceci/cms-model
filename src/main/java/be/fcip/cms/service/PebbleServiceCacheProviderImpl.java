@@ -23,7 +23,7 @@ public class PebbleServiceCacheProviderImpl implements IPebbleServiceCacheProvid
     @Cacheable(value = "block", key = "'compiled_block_' + #id")
     public PebbleTemplate getCompiledTemplate(Long id) throws PebbleException {
 
-        BlockEntity block = blockService.findWithCache(id);
+        BlockEntity block = blockService.findCached(id);
         return pebbleStringEngine.getTemplate(block.getContent(), "block_" + block.getId(), true);
     }
 

@@ -19,7 +19,7 @@ public interface IMessageService {
 
     void delete(Long id);
 
-    Map<String, Map<String, String>> mapOfTranslation();
+    Map<String, Map<String, String>> mapOfTranslationCached();
 
     WordEntity findByMessageKey(String key);
 

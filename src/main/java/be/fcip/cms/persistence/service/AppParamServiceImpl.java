@@ -30,7 +30,7 @@ public class AppParamServiceImpl implements IAppParamService {
     }
 
     @Override
-    public Map<String, String> getParams() {
+    public Map<String, String> getParamsCached() {
         return cache.getParams();
     }
 
@@ -72,12 +72,12 @@ public class AppParamServiceImpl implements IAppParamService {
 
     @Override
     public String getParam(String id) {
-        return getParams().get(id);
+        return getParamsCached().get(id);
     }
 
     @Override
     public String getParam(String id, String langId) {
-        Map<String, String> paramsMap = getParams();
+        Map<String, String> paramsMap = getParamsCached();
         String result = null;
         // Try to find a translated params (title is already translated)
         if(ApplicationUtils.locales.size() > 1 && !id.equals("title")){

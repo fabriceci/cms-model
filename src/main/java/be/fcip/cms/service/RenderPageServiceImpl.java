@@ -130,7 +130,7 @@ public class RenderPageServiceImpl implements IRenderPageService {
 
         // Pas grave pour les perfs car les blocks seront dans le cache
         BlockEntity master = null;
-        master = blockService.findWithCache(ApplicationUtils.websites.get(content.getWebsite().getId()).getMaster().getId());
+        master = blockService.findCached(ApplicationUtils.websites.get(content.getWebsite().getId()).getMaster().getId());
 
         model.put("main",  peebleService.parseBlock(contentTemplateDto.getBlock(), model));
 
@@ -169,7 +169,7 @@ public class RenderPageServiceImpl implements IRenderPageService {
 
     private static String[] APP_PARAMS_META_NAME = {"seo_tags", "seo_description", "seo_title", "seo_h1"};
     private void fillSeo(ModelMap model, PageContentEntity contentData, HashMap<String, Object> data) {
-        Map<String, String> paramsMap = appParamService.getParams();
+        Map<String, String> paramsMap = appParamService.getParamsCached();
         // DIRTY HACK - the map is singleton, I add the title in it to use in replaceTokenByParam
         paramsMap.put("title", contentData.getTitle());
         for (String paramName : APP_PARAMS_META_NAME) {

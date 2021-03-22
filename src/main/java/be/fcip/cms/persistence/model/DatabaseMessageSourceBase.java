@@ -22,7 +22,7 @@ public class DatabaseMessageSourceBase extends AbstractMessageSource {
     }
 
     private String getText(String code, Locale locale) {
-        Map<String, Map<String, String>> all = messageService.mapOfTranslation();
+        Map<String, Map<String, String>> all = messageService.mapOfTranslationCached();
 
         Map<String, String> codeMap = all.get(code);
         String result = null;

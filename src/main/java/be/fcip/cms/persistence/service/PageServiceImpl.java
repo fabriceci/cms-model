@@ -62,7 +62,7 @@ public class PageServiceImpl implements IPageService {
      * Public page / when user request a page
      */
     @Override
-    public PageEntity findBySlug(String slug, Locale locale) {
+    public PageEntity findBySlugCached(String slug, Locale locale) {
 
         Long contentId = cacheableContentProvider.findContentId(slug, locale);
         if (contentId == null)

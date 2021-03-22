@@ -159,7 +159,7 @@ public class CacheablePageTreeProviderImpl implements ICacheablePageTreeProvider
                 title = (String)map.get("seo_h1");
             } else if(!StringUtils.isEmpty(appParamService.getParam("seo_h1", locale))){
                 String seo_h1 = appParamService.getParam("seo_h1", locale);
-                appParamService.getParams().put("title", title);
+                appParamService.getParamsCached().put("title", title);
                 title = appParamService.replaceTokenByParam(seo_h1, locale);
             }
         }
