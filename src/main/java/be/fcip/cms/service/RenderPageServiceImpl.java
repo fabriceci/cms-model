@@ -157,7 +157,7 @@ public class RenderPageServiceImpl implements IRenderPageService {
         seoMap.put("title", contentData.getTitle());
         for (String paramName : APP_PARAMS_META_NAME) {
             // 1. Check if the page override the default value
-            if(data.containsKey(paramName) && !StringUtils.isEmpty((String)data.get(paramName))){
+            if(data != null && data.containsKey(paramName) && !StringUtils.isEmpty((String)data.get(paramName))){
                 model.put(paramName, data.get(paramName));
             } else { // 2. Look at the default SEO values
                 String result = websiteEntity.findTranslatableProperty(paramName, contentData.getLanguage());
