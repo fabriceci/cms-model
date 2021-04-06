@@ -46,9 +46,11 @@ public class FieldHelper {
 
         Gson gson = new Gson();
         List<TemplateField> fields = gson.fromJson(template.getFields(), new TypeToken<ArrayList<TemplateField>>(){}.getType());
+        // Folder has not fields
+        if(fields == null) return null;
+
         Map<String, CmsFieldEntity> fieldMap = cmsFieldService.findAllCmsFieldCached().stream()
                 .collect(Collectors.toMap(CmsFieldEntity::getName, field -> field));
-
 
         for (TemplateField contentTemplateFieldset : fields) {
 
