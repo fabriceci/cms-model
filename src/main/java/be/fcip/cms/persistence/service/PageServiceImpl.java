@@ -1,6 +1,7 @@
 package be.fcip.cms.persistence.service;
 
 import be.fcip.cms.exception.ResourceNotFoundException;
+import be.fcip.cms.model.MenuItem;
 import be.fcip.cms.model.db.PageableResult;
 import be.fcip.cms.persistence.cache.ICacheablePageProvider;
 import be.fcip.cms.persistence.cache.ICacheablePageTreeProvider;
@@ -115,6 +116,17 @@ public class PageServiceImpl implements IPageService {
 
         return cacheablePageProvider.findWebContent(locale, null, null, null, type, null, null, contentType, pageNumber, limit, null);
     }
+
+
+    @Override
+    @Caching(evict = {
+            @CacheEvict(value = "global", key= "'dynamicSlug'"),
+            @CacheEvict(value = "pageGlobal", allEntries = true),
+    })
+    public void removeFromCache(Long id) {
+        clearCache(id);
+    }
+
     @Override
     @Caching(evict = {
             @CacheEvict(value = "global", key= "'dynamicSlug'"),
@@ -137,7 +149,6 @@ public class PageServiceImpl implements IPageService {
 
         return pageRepository.save(p);
     }
-
     @Override
     @Caching(evict = {
             @CacheEvict(value = "global", key= "'dynamicSlug'"),
@@ -222,8 +233,13 @@ public class PageServiceImpl implements IPageService {
     }
 
     @Override
-    public String getNavCached(Long pageId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId) {
-        return cacheablePageTreeProvider.getMenu(pageId, lang, depth, currentContentId, onlyTitle, rootOffset, limitRoot, websiteId);
+    public String getNavCached(Long pageId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId, String ulChildrenCLass, String liChildrenClass, String linkClass) {
+        return cacheablePageTreeProvider.getMenu(pageId, lang, depth, currentContentId, onlyTitle, rootOffset, limitRoot, websiteId,  ulChildrenCLass, liChildrenClass, linkClass);
+    }
+
+    @Override
+    public List<MenuItem> getNavItemCached(Long contentId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId) {
+        return cacheablePageTreeProvider.getMenuItem(contentId, lang, depth, currentContentId, onlyTitle, rootOffset, limitRoot, websiteId);
     }
 
     public String getBreadcrumb(PageEntity pageEntity, String locale, String separator) {

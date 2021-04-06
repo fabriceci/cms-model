@@ -37,22 +37,22 @@ public class RenderPageServiceImpl implements IRenderPageService {
     @Autowired private CacheManager cacheManager;
 
     @Override
-    public String renderPage(HttpServletRequest request, HttpServletResponse response, PageEntity content, ModelMap model) throws IOException, PebbleException, ServletException {
+    public String renderPage(HttpServletRequest request, HttpServletResponse response, PageEntity page, ModelMap model) throws IOException, PebbleException, ServletException {
 
         Locale locale = LocaleContextHolder.getLocale();
-        if(content == null) throw new IllegalArgumentException();
+        if(page == null) throw new IllegalArgumentException();
 
         if(CmsSecurityUtils.uriIsAdmin(request))  throw new ResourceNotFoundException();
-        WebsiteEntity websiteEntity = websiteService.findAllCached().get(content.getWebsite().getId());
+        WebsiteEntity websiteEntity = websiteService.findAllCached().get(page.getWebsite().getId());
         request.setAttribute("websiteId", websiteEntity.getId()); // used in view helpers
         model.put("website", websiteEntity);
-        PageContentEntity contentData= null;
+        PageContentEntity pageContent= null;
         PageTemplateEntity contentTemplateDto = null;
 
         String templateName = "";
 
-        contentData = content.getContentMap().get(locale.toString());
-        contentTemplateDto = contentTemplateService.findCached(content.getTemplate().getId());
+        pageContent = page.getContentMap().get(locale.toString());
+        contentTemplateDto = contentTemplateService.findCached(page.getTemplate().getId());
         templateName = contentTemplateDto.getName().toLowerCase();
         model.put("template", contentTemplateDto);
 
@@ -60,7 +60,7 @@ public class RenderPageServiceImpl implements IRenderPageService {
         UserEntity currentUser = CmsSecurityUtils.getCurrentUser();
         Cache.ValueWrapper cacheWrapper = null;
         // TO DO : testé si on est en dev!
-        String cacheKey = content.getId() + "_" + locale.toString();
+        String cacheKey = page.getId() + "_" + locale.toString();
         if((currentUser == null) && contentTemplateDto.isFullCache() && !ApplicationUtils.isDev){
             cacheWrapper = cacheManager.getCache("pageFull").get(cacheKey);
         } else if((currentUser == null) && contentTemplateDto.isShortCache() && !ApplicationUtils.isDev){
@@ -70,11 +70,11 @@ public class RenderPageServiceImpl implements IRenderPageService {
             return (String)cacheWrapper.get();
         }
 
-        if (!CmsContentUtils.displayable(content) || !CmsContentUtils.displayable(contentData) || contentTemplateDto.getName().equals("folder")) {
+        if (!CmsContentUtils.displayable(page) || !CmsContentUtils.displayable(pageContent) || contentTemplateDto.getName().equals("folder")) {
             throw new ResourceNotFoundException();
         }
 
-        if(contentService.pageIsPrivate(content)){
+        if(contentService.pageIsPrivate(page)){
             if(!CmsSecurityUtils.hasRole("ROLE_MEMBER")) {
                 //response.sendRedirect("/login");
                 new HttpSessionRequestCache().saveRequest(request, response);
@@ -85,13 +85,13 @@ public class RenderPageServiceImpl implements IRenderPageService {
 
         /*
         Example check role
-        if(!CmsUtils.hasRoles(contentService.getRoleForContent(content))){
+        if(!CmsUtils.hasRoles(contentService.getRoleForContent(page))){
             throw new AccessDeniedException("you don't have the required privileges to perform this action");
         }*/
 
         HashMap<String, Object> data = null;
-        if (!StringUtils.isEmpty(contentData.getData())) {
-            data = CmsContentUtils.parseData(contentData.getData());
+        if (!StringUtils.isEmpty(pageContent.getData())) {
+            data = CmsContentUtils.parseData(pageContent.getData());
 
             if(templateName.equals("link")){
                 String URL = (String) data.get("_text");
@@ -103,12 +103,12 @@ public class RenderPageServiceImpl implements IRenderPageService {
         }
 
         // SEO FIELDS (defined here to be overridable in IModelExtension hook)
-        model.put("title", contentData.getTitle());
+        model.put("title", pageContent.getTitle());
         model.put("seo_image", websiteEntity.getImage());
-        fillSeo(model, contentData, data, websiteEntity);
+        fillSeo(model, pageContent, data, websiteEntity);
 
-        model.put("pageContent", contentData);
-        model.put("page", content);
+        model.put("pageContent", pageContent);
+        model.put("page", page);
 
         peebleService.fillModelMap(model, request);
 
@@ -121,17 +121,17 @@ public class RenderPageServiceImpl implements IRenderPageService {
         if(!StringUtils.isEmpty(contentTemplateDto.getIncludeTop())){
             include_top.append(peebleService.parseString(contentTemplateDto.getIncludeTop(), model, "template_" + contentTemplateDto.getId() + "_top"));
         }
-        if(!StringUtils.isEmpty(content.getIncludeTop())){
-            include_top.append('\n').append(peebleService.parseString(content.getIncludeTop(), model, content.getId() + "_top"));
+        if(!StringUtils.isEmpty(page.getIncludeTop())){
+            include_top.append('\n').append(peebleService.parseString(page.getIncludeTop(), model, page.getId() + "_top"));
         }
 
         if(!StringUtils.isEmpty(contentTemplateDto.getIncludeBottom())){
             include_bottom.append( peebleService.parseString(contentTemplateDto.getIncludeBottom(), model, "template_" + contentTemplateDto.getId() + "_bot"));
 
         }
-        if(!StringUtils.isEmpty(content.getIncludeBottom())){
-            include_bottom.append('\n').append(content.getIncludeBottom());
-            include_top.append('\n').append(peebleService.parseString(content.getIncludeBottom(), model, content.getId() + "_bot"));
+        if(!StringUtils.isEmpty(page.getIncludeBottom())){
+            include_bottom.append('\n').append(page.getIncludeBottom());
+            include_top.append('\n').append(peebleService.parseString(page.getIncludeBottom(), model, page.getId() + "_bot"));
         }
 
         if(!StringUtils.isEmpty(include_top)){

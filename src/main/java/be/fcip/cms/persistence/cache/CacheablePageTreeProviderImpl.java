@@ -1,6 +1,6 @@
 package be.fcip.cms.persistence.cache;
 
-import be.fcip.cms.model.tree.TreeItem;
+import be.fcip.cms.model.MenuItem;
 import be.fcip.cms.persistence.model.PageContentEntity;
 import be.fcip.cms.persistence.model.PageEntity;
 import be.fcip.cms.persistence.model.WebsiteEntity;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.*;
+import java.util.List;
 
 @Service
 @Transactional
@@ -32,7 +33,7 @@ public class CacheablePageTreeProviderImpl implements ICacheablePageTreeProvider
     private final static int MAX_EXPANDED_TREE_LEVEL = 3; // 0 based
     
     
-    // LIE A LA VERSION REACT
+    /* LIE A LA VERSION REACT
     @Override
     public List<TreeItem> getTreeItems(Long websiteId) {
 
@@ -67,12 +68,24 @@ public class CacheablePageTreeProviderImpl implements ICacheablePageTreeProvider
             result.add(item);
         }
     }
-    // ---
+    */
 
+    /**
+     *
+     * @param parentId the parrentPage Id, if null, it's a root page
+     * @param lang the current lang
+     * @param depth how depth
+     * @param currentPageId the current page
+     * @param onlyTitle if true, return the page title whatever there is or not menu item title
+     * @param rootOffset skip n first result
+     * @param limitRoot limit the number of result
+     * @param websiteId the websiteID
+     * @return
+     */
     @Override
     @Cacheable(value = "pageGlobal")
-    public String getMenu(Long pageId, String lang, long depth, Long currentPageId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId) {
-        List<PageEntity> rootsByContentIdCustom = pageRepository.findRootsByPageIdCustom(pageId, lang,
+    public List<MenuItem> getMenuItem(Long parentId, String lang, long depth, Long currentPageId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId){
+        List<PageEntity> rootsByContentIdCustom = pageRepository.findRootsByPageIdCustom(parentId, lang,
                 true, websiteId);
         List<PageEntity> roots = new ArrayList<>();
         int cpt = 0;
@@ -90,11 +103,164 @@ public class CacheablePageTreeProviderImpl implements ICacheablePageTreeProvider
             }
         }
 
+        List<MenuItem> result = new ArrayList<>();
+        return buildMenuItem(result, roots, lang, depth, currentPageId, onlyTitle);
+    }
+    private List<MenuItem> buildMenuItem(List<MenuItem> result, List<PageEntity> pages, String locale, long depth,
+                               Long currentContentId, boolean onlyTitle) {
 
+        for (PageEntity p : pages) {
+            PageEntity content = cachableContentProvider.findContent(p.getId());
+
+            if (!content.isEnabled() || !content.isMenuItem()) {
+                continue;
+            }
+
+            MenuItem item = new MenuItem();
+            item.setPageId(p.getId());
+            item.setMenuClass(p.getMenuClass());
+            if(currentContentId != null) item.setActive(content.getId() == currentContentId);
+
+            if(content.getTemplate().getId() == CmsUtils.TEMPLATE_FOLDER_ID){
+                item.setType("folder");
+            } else if (content.getTemplate().getId()  == CmsUtils.TEMPLATE_LINK_ID){
+                item.setType("link");
+            } else {
+                item.setType("page");
+            }
+
+            if (!content.getContentMap().isEmpty()) {
+                PageContentEntity data = content.getContentMap().get(locale);
+                item.setDataId(data.getId());
+                if (data != null && data.isEnabled()){
+                    item.setTitle(StringUtils.isEmpty(data.getMenuTitle()) || onlyTitle ? data.getTitle() : data.getMenuTitle());
+                    item.setSlug(data.getComputedSlug());
+                }
+            }
+
+            // children
+            List<PageEntity> childrens = new ArrayList<>();
+            for (PageEntity c : content.getPageChildren()) {
+                PageEntity contentChildren = cachableContentProvider.findContent(c.getId());
+                if (contentChildren.isEnabled() && contentChildren.isMenuItem()) {
+                    childrens.add(contentChildren);
+                }
+            }
+
+            if (childrens.size() > 0 && depth != 0) {
+                List<MenuItem> childResult = new ArrayList<>();
+                item.setChildren(buildMenuItem(childResult, childrens, locale, depth - 1, currentContentId, onlyTitle));
+            }
+
+            // skip empty item
+            if(item.getChildren() == null && item.getTitle() == null){
+                continue;
+            }
+            result.add(item);
+        }
+        return result;
+    }
+
+
+    @Override
+    @Cacheable(value = "pageGlobal")
+    public String getMenu(Long parentId, String lang, long depth, Long currentPageId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId, String ulChildrenCLass, String liChildrenClass, String linkClass) {
+        List<PageEntity> rootsByContentIdCustom = pageRepository.findRootsByPageIdCustom(parentId, lang,
+                true, websiteId);
+        List<PageEntity> roots = new ArrayList<>();
+        int cpt = 0;
+        for (PageEntity contentEntity : rootsByContentIdCustom) {
+            cpt++;
+            if(rootOffset != null){
+                if(cpt <= rootOffset){
+                    continue;
+                }
+            }
+            roots.add(new PageEntity(contentEntity.getId()));
+
+            if(limitRoot != null && roots.size() == limitRoot){
+                break;
+            }
+        }
+
+        List<MenuItem> result = new ArrayList<>();
+        buildMenuItem(result , roots, lang, depth, currentPageId, onlyTitle);
+
+        if(ulChildrenCLass == null){
+            ulChildrenCLass = "";
+        }
+        if(liChildrenClass == null){
+            liChildrenClass = "has_children";
+        }
+        if(linkClass == null){
+            linkClass = "";
+        }
         StringBuilder sb = new StringBuilder();
-        buildNavMenu(roots, sb, lang, depth, currentPageId, onlyTitle);
+        buildHtmlNavMenu(result, sb, ulChildrenCLass, liChildrenClass, linkClass);
         return sb.toString();
     }
+
+    private String buildHtmlNavMenu(List<MenuItem> pages, StringBuilder sb, String childrenUlClass, String childrenLiClass, String linkClass) {
+
+        for (MenuItem p : pages) {
+
+            if (p.isActive()) {
+                sb.append("<li class='active'>");
+            } else if (p.getChildren() != null && p.getChildren().size() > 0) {
+                sb.append(String.format("<li class='%s'>", childrenLiClass));
+            } else {
+                sb.append("<li>");
+            }
+
+            if (!p.getType().equals("folder")) {
+                sb.append("<a ");
+                if (p.isActive() || !StringUtils.isEmpty(p.getMenuClass())) {
+                    sb.append("class='");
+                    if (p.isActive()) {
+                        sb.append("active ");
+                    }
+                    if(!StringUtils.isEmpty(linkClass)){
+                        sb.append(linkClass).append(" ");
+                    }
+                    if (!StringUtils.isEmpty(p.getMenuClass())) {
+                        sb.append(p.getMenuClass());
+                    }
+                    sb.append("' ");
+                }
+                sb.append("href=\"");
+                if (p.getType().equals("link")) {
+                    sb.append(p.getTitle());
+                    sb.append("\" target=\"_blank\">");
+                } else {
+                    sb.append(p.getSlug());
+                    sb.append("\">");
+                }
+
+                if (!StringUtils.isEmpty(p.getMenuContent())) {
+                    sb.append(p.getMenuContent());
+                    if (!p.isMenuContentOnly()) {
+                        sb.append(p.getTitle());
+                    }
+                } else {
+                    sb.append(p.getTitle());
+                }
+                sb.append("</a>");
+            } else {
+                sb.append("<a>").append(p.getTitle()).append("</a>");
+            }
+
+            if (p.getChildren() != null && p.getChildren().size() > 0) {
+
+                sb.append(String.format("<ul class='%s'>", childrenUlClass));
+                buildHtmlNavMenu(p.getChildren(), sb, childrenUlClass, childrenLiClass, linkClass);
+                sb.append("</ul>");
+            }
+            sb.append("</li>");
+        }
+
+        return sb.toString();
+    }
+
 
     @Override
     @Cacheable(value = "pageGlobal")
@@ -195,111 +361,6 @@ public class CacheablePageTreeProviderImpl implements ICacheablePageTreeProvider
         }
     }
 
-    private String buildNavMenu(List<PageEntity> pages, StringBuilder sb, String locale, long depth,
-                                Long currentContentId, boolean onlyTitle) {
-
-        boolean isFolder = false;
-        boolean isLink = false;
-        boolean isCurrentPage = false;
-        for (PageEntity p : pages) {
-            PageEntity content = cachableContentProvider.findContent(p.getId());
-
-            if (!content.isEnabled() || !content.isMenuItem()) {
-                continue;
-            }
-
-            isFolder = content.getTemplate().getId() == CmsUtils.TEMPLATE_FOLDER_ID;
-            isLink = content.getTemplate().getId()  == CmsUtils.TEMPLATE_LINK_ID;
-
-            // children
-            List<PageEntity> childrens = new ArrayList<>();
-            for (PageEntity c : content.getPageChildren()) {
-                PageEntity contentChildren = cachableContentProvider.findContent(c.getId());
-                if (contentChildren.isEnabled() && contentChildren.isMenuItem()) {
-                    childrens.add(contentChildren);
-                }
-            }
-
-            // current page
-            if (currentContentId != null) {
-                isCurrentPage = content.getId() == currentContentId;
-
-                if (childrens.size() > 0) {
-                    for (PageEntity children : childrens) {
-                        if (children.getId() == currentContentId) {
-                            isCurrentPage = true;
-                            break;
-                        }
-                    }
-                }
-            }
-            if (isCurrentPage) {
-                sb.append("<li class='active'>");
-            } else if (childrens.size() > 0) {
-                sb.append("<li class='dropdown'>");
-            } else {
-                sb.append("<li>");
-            }
-
-            if (!content.getContentMap().isEmpty()) {
-                PageContentEntity data = content.getContentMap().get(locale);
-
-                if (data == null)
-                    break;
-
-                String menuTitle = StringUtils.isEmpty(data.getMenuTitle()) || onlyTitle ? data.getTitle() : data.getMenuTitle();
-
-                if (!isFolder) {
-                    sb.append("<a ");
-                    if (isCurrentPage || !StringUtils.isEmpty(content.getMenuClass())) {
-                        sb.append("class='");
-                        // Todo: remove extra space
-                        if (isCurrentPage) {
-                            sb.append("active ");
-                        }
-                        if (!StringUtils.isEmpty(content.getMenuClass())) {
-                            sb.append(content.getMenuClass());
-                        }
-                        sb.append("' ");
-                    }
-                    if (isCurrentPage) {
-                        sb.append("class='active' ");
-                    }
-                    sb.append("href=\"");
-                    if (isLink) {
-                        sb.append((String) CmsContentUtils.parseData(data.getData()).get("_text"));
-                        sb.append("\" target=\"_blank\">");
-                    } else {
-                        String url = data.getComputedSlug();
-                        sb.append(url);
-                        sb.append("\">");
-                    }
-
-                    if (!StringUtils.isEmpty(content.getMenuContent())) {
-                        sb.append(content.getMenuContent());
-                        if (!content.isMenuContentOnly()) {
-                            sb.append(menuTitle);
-                        }
-                    } else {
-                        sb.append(menuTitle);
-                    }
-                    sb.append("</a>");
-                } else {
-                    sb.append("<a>").append(menuTitle).append("</a>");
-                }
-
-                if (childrens.size() > 0 && depth != 0) {
-
-                    sb.append("<ul class='main-menu-children sub-menu'>");
-                    buildNavMenu(childrens, sb, locale, depth - 1, currentContentId, onlyTitle);
-                    sb.append("</ul>");
-                }
-                sb.append("</li>");
-            }
-        }
-
-        return sb.toString();
-    }
 
     private String buildJsonTree(List<PageEntity> pages, StringBuilder sb, boolean first, int level, String locale,
                                  String type) {

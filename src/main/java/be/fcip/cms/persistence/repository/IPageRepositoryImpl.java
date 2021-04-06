@@ -157,7 +157,7 @@ public class IPageRepositoryImpl implements IPageRepositoryCustom {
     }
 
     @Override
-    public List<PageEntity> findRootsByPageIdCustom(Long contentId, String locale, boolean onlyMenuItem, Long websiteId) {
+    public List<PageEntity> findRootsByPageIdCustom(Long parentId, String locale, boolean onlyMenuItem, Long websiteId) {
         QPageEntity PageEntity = QPageEntity.pageEntity;
         QPageContentEntity PageContentEntity = QPageContentEntity.pageContentEntity;
 
@@ -176,10 +176,10 @@ public class IPageRepositoryImpl implements IPageRepositoryCustom {
         if(onlyMenuItem){
             queryBool.and(PageEntity.menuItem.eq(true));
         }
-        if(contentId == null || contentId == 0L){
+        if(parentId == null || parentId == 0L){
             queryBool.and(PageEntity.pageParent.isNull());
         } else {
-            queryBool.and(PageEntity.pageParent.id.eq(contentId));
+            queryBool.and(PageEntity.pageParent.id.eq(parentId));
         }
         if(websiteId != null){
             queryBool.and(PageEntity.website.id.eq(websiteId));

@@ -11,5 +11,5 @@ public interface IPageRepositoryCustom {
 
     PageableResult<PageEntity> findWebContentCustom(String locale, LocalDateTime begin, LocalDateTime end, String name, String type, String theme, String tags, String contentType, Long pageNumber, Long limit, Boolean isPrivate);
 
-    List<PageEntity> findRootsByPageIdCustom(Long contentId, String locale, boolean onlyMenuItem, Long websiteId);
+    List<PageEntity> findRootsByPageIdCustom(Long parentId, String locale, boolean onlyMenuItem, Long websiteId);
 }

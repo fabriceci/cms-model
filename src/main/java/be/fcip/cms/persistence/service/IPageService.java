@@ -1,5 +1,6 @@
 package be.fcip.cms.persistence.service;
 
+import be.fcip.cms.model.MenuItem;
 import be.fcip.cms.model.db.PageableResult;
 import be.fcip.cms.persistence.model.PageContentEntity;
 import be.fcip.cms.persistence.model.PageEntity;
@@ -30,7 +31,9 @@ public interface IPageService {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN_CMS_DELETE', 'ROLE_ADMIN_WEBCONTENT_DELETE')")
     void deleteContentData(Long id) throws Exception;
 
-    String getNavCached(Long contentId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId);
+    String getNavCached(Long pageId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId, String ulChildrenCLass, String liChildrenClass, String linkClass);
+
+    List<MenuItem> getNavItemCached(Long contentId, String lang, long depth, Long currentContentId, boolean onlyTitle, Integer rootOffset, Integer limitRoot, Long websiteId);
 
     String getBreadcrumbCached(PageEntity content, String locale, String seperator, Long parendId, boolean h1);
 
@@ -41,6 +44,8 @@ public interface IPageService {
     PageEntity findPageCached(Long id);
 
     PageContentEntity findPageContent(Long id);
+
+    void removeFromCache(Long id);
 
     boolean pageCanBeDeleted(PageEntity content, String contentDataLocale);
 
