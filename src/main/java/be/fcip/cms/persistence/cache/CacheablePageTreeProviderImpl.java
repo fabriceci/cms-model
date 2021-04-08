@@ -123,6 +123,7 @@ public class CacheablePageTreeProviderImpl implements ICacheablePageTreeProvider
 
             if(content.getTemplate().getId() == CmsUtils.TEMPLATE_FOLDER_ID){
                 item.setType("folder");
+                if(depth == 0 || content.getPageChildren().size() == 0) continue;
             } else if (content.getTemplate().getId()  == CmsUtils.TEMPLATE_LINK_ID){
                 item.setType("link");
             } else {

@@ -141,6 +141,7 @@ public class CmsContentUtils {
                 .collect(Collectors.toMap(CmsFieldEntity::getName, field -> field));
 
         SimpleDateFormat dateFormatter = new SimpleDateFormat(CmsUtils.DATE_FORMAT);
+        if(fields == null) return new PageData();
         for (TemplateField ctf : fields) {
 
             Map<String, Object> inputsMap = new HashMap<>();
