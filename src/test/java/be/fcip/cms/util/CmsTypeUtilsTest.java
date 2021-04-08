@@ -157,12 +157,28 @@ public class CmsTypeUtilsTest {
 
     @Test
     @DisplayName("Locale to String Test")
-    public void castlocaleToString(){
+    public void castLocaleToString(){
         Object input = new Locale("en");
         assertEquals("en", CmsTypeUtils.localeToString(input));
         assertEquals(null, CmsTypeUtils.localeToString("en"));
         assertNull(CmsTypeUtils.localeToString(null));
         assertNull(CmsTypeUtils.localeToString(new Object()));
         assertNull(CmsTypeUtils.localeToString(5));
+    }
+
+    @Test
+    @DisplayName("Default value Test")
+    public void defaultValueTest(){
+        assertEquals("foo", CmsTypeUtils.toString(null, "foo"));
+        assertEquals(1, CmsTypeUtils.toInteger(null, 1));
+        assertEquals(2, CmsTypeUtils.toLong(null, 2L));
+        assertEquals(true, CmsTypeUtils.toBoolean(null, true));
+        assertEquals(2.2, CmsTypeUtils.toDouble(null, 2.2));
+        Locale locale = new Locale("fr");
+        assertEquals(locale, CmsTypeUtils.toLocale(null, locale));
+        List<String> list = Collections.singletonList("foo");
+        assertEquals(list, CmsTypeUtils.toList(null, list));
+        Map<String, String> map = Collections.singletonMap("foo", "value");
+        assertEquals(map, CmsTypeUtils.toMap(null, map));
     }
 }

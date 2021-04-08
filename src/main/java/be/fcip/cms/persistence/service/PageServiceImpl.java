@@ -135,6 +135,9 @@ public class PageServiceImpl implements IPageService {
     public PageEntity savePage(PageEntity p) {
 
         clearCache(p.getId());
+        if(p.getPageParent() != null){
+            clearCache(p.getPageParent().getId());
+        }
         if (p.getId() == 0) {
             PageEntity parent = p.getPageParent();
 
@@ -199,6 +202,9 @@ public class PageServiceImpl implements IPageService {
         // delete
         PageEntity parent = current.getPageParent();
         clearCache(current.getId());
+        if(current.getPageParent() != null){
+            clearCache(current.getPageParent().getId());
+        }
         pageRepository.deleteById(id);
 
         List<PageEntity> pages = pageRepository.findByPageParentOrderByPositionAsc(parent);
@@ -341,6 +347,10 @@ public class PageServiceImpl implements IPageService {
 
         for (PageEntity c : content.getPageChildren()) {
             PageEntity children = cacheablePageProvider.findContent(c.getId());
+            if(children == null) {
+                log.error("Page with id " + content.getId() + " has children that doesn't exist (cache issue)");
+                return true;
+            }
             PageContentEntity contentDataDto = children.getContentMap().get(contentDataLocale);
 
             if (contentDataDto  == null ) {

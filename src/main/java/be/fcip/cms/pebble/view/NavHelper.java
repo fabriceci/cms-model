@@ -7,6 +7,7 @@ import be.fcip.cms.util.CmsNumericUtils;
 import be.fcip.cms.util.CmsTypeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -33,18 +34,18 @@ public class NavHelper {
 
 
     public List<MenuItem> menuItem(Map<Object, Object> params){
-        Long contentId = CmsTypeUtils.toLong(params.get("contentId"));
-        String locale =  CmsTypeUtils.localeToString(params.get("locale")).toString();
-        Long depth = CmsTypeUtils.toLong(params.get("depth"));
-        Long currentId =  CmsTypeUtils.toLong(params.get("currentId"));
+        Long parentId = CmsTypeUtils.toLong(params.get("parentId"));
+        String locale =  CmsTypeUtils.toLocale(params.get("locale"), LocaleContextHolder.getLocale()).toString();
+        long depth = CmsTypeUtils.toLong(params.get("depth"), 0);
+        Long currentPageId =  CmsTypeUtils.toLong(params.get("currentPageId"));
         Boolean onlyTitle =  CmsTypeUtils.toBoolean(params.get("contentId"), false);
-        Integer offsetRoots =  CmsTypeUtils.toInteger(params.get("offsetRoots"));
-        Integer limitRoots = CmsTypeUtils.toInteger(params.get("limitRoots"));
+        Integer offset =  CmsTypeUtils.toInteger(params.get("offset"));
+        Integer limit = CmsTypeUtils.toInteger(params.get("limit"));
         Long websiteId =  CmsTypeUtils.toLong(params.get("websiteId"));
         if(websiteId == null){
             websiteId = (Long)RequestContextHolder.currentRequestAttributes().getAttribute("websiteId", RequestAttributes.SCOPE_REQUEST);
         }
-        return contentService.getNavItemCached(contentId, locale, depth, currentId, onlyTitle, offsetRoots, limitRoots, websiteId);
+        return contentService.getNavItemCached(parentId, locale, depth, currentPageId, onlyTitle, offset, limit, websiteId);
     }
     public String menu() {
         return menu(new HashMap<>());
@@ -56,8 +57,8 @@ public class NavHelper {
         Long depth = CmsTypeUtils.toLong(params.get("depth"));
         Long currentPageId =  CmsTypeUtils.toLong(params.get("currentPageId"));
         Boolean onlyTitle =  CmsTypeUtils.toBoolean(params.get("contentId"), false);
-        Integer offsetRoots =  CmsTypeUtils.toInteger(params.get("offsetRoots"));
-        Integer limitRoots = CmsTypeUtils.toInteger(params.get("limitRoots"));
+        Integer offset =  CmsTypeUtils.toInteger(params.get("offset"));
+        Integer limit = CmsTypeUtils.toInteger(params.get("limit"));
         Long websiteId =  CmsTypeUtils.toLong(params.get("websiteId"));
         String ulChildrenClass = CmsTypeUtils.toString(params.get("ulChildrenClass"));
         String liChildrenClass = CmsTypeUtils.toString(params.get("liChildrenClass"));
@@ -65,6 +66,6 @@ public class NavHelper {
         if(websiteId == null){
             websiteId = (Long)RequestContextHolder.currentRequestAttributes().getAttribute("websiteId", RequestAttributes.SCOPE_REQUEST);
         }
-        return contentService.getNavCached(parentId, locale, depth, currentPageId, onlyTitle, offsetRoots, limitRoots, websiteId, ulChildrenClass, liChildrenClass, linkClass);
+        return contentService.getNavCached(parentId, locale, depth, currentPageId, onlyTitle, offset, limit, websiteId, ulChildrenClass, liChildrenClass, linkClass);
     }
 }

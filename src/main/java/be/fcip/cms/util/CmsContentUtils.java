@@ -74,10 +74,9 @@ public class CmsContentUtils {
 
     public static String computeSlugWithSlashes(final PageEntity content, final PageContentEntity contentData, final String locale, final PageEntity parent, final boolean forceLang, String websiteSlug) {
         boolean malFormedSlug = contentData.getSlug().charAt(0) != '/';
-        boolean malFormedWebsite = !StringUtils.isEmpty(websiteSlug) && websiteSlug.charAt(0) != '/';
+        boolean needBeginSlash = !StringUtils.isEmpty(websiteSlug) && websiteSlug.charAt(0) != '/';
         if(malFormedSlug){  log.error("Slug malformed (missing /) : contentData with id : " + contentData.getId()); }
-        if(malFormedWebsite){
-            log.error("Website Slug malformed (missing /) : contentData with id : " + contentData.getId());
+        if(needBeginSlash){
             websiteSlug = "/" + websiteSlug;
         }
         String slug = malFormedSlug ? '/' + contentData.getSlug() : contentData.getSlug();

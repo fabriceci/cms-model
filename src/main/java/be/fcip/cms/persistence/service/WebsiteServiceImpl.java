@@ -37,7 +37,13 @@ public class WebsiteServiceImpl implements IWebsiteService{
             @CacheEvict(value = "pageShort", allEntries = true)
     })
     public WebsiteEntity save(WebsiteEntity website) {
-
+        if(website.getId() == 0){
+            website.addTranslatableProperty("seo_description", ApplicationUtils.defaultLocale.toString(), "");
+            website.addTranslatableProperty("seo_tags", ApplicationUtils.defaultLocale.toString(), "");
+            website.addTranslatableProperty("seo_title", ApplicationUtils.defaultLocale.toString(), "");
+            website.addTranslatableProperty("seo_h1", ApplicationUtils.defaultLocale.toString(), "");
+            website.addTranslatableProperty("sitename", ApplicationUtils.defaultLocale.toString(), "");
+        }
         return websiteRepository.save(website);
     }
 

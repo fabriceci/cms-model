@@ -27,41 +27,46 @@ public class CmsAssetsUtils {
     public final static String ASSETS_PATH = "/public/assets/";
     private static final Pattern minifyPattern = Pattern.compile("(?:.*)?-([0-9]+)");
 
-    public static String  getAssets(String name){
+    public static String  getAssets(String name, String prepath){
         if(StringUtils.isEmpty(name)) return null;
-        return doWork(name);
+        return doWork(name, prepath);
     }
 
-    public static String getAssets(List<String> list) {
+    public static String getAssets(List<String> list,  String prepath) {
 
         StringBuilder sb = new StringBuilder();
         for (String s : list) {
-            sb.append(doWork(s)).append('\n');
+            sb.append(doWork(s, prepath)).append('\n');
         }
         return sb.toString();
     }
 
-    private static String doWork(final String name){
-        if(name.endsWith("js")){
-            return getJs(name);
-        } else if(name.endsWith("css")){
-            return getCss(name);
+    private static String doWork(final String name, String prepath){
+        if(!StringUtils.isEmpty(prepath)){
+            prepath = "/" + prepath + "/";
         } else{
-            return getAssetPath(name);
+            prepath = "";
+        }
+        if(name.endsWith("js")){
+            return getJs(name, prepath);
+        } else if(name.endsWith("css")){
+            return getCss(name, prepath);
+        } else{
+            return getAssetPath(name, prepath);
         }
     }
 
-    public static String getJs(final String name){
+    public static String getJs(final String name, final String prepath){
         if(name == null) return null;
         return JS_MODEL_BEGIN + ASSETS_PATH + name + "?" + CmsUtils.CMS_UNIQUE_NUMBER + JS_MODEL_END;
     }
 
-    public static String getCss(final String name){
+    public static String getCss(final String name, final String prepath){
         if(name == null) return null;
         return CSS_MODEL_BEGIN + ASSETS_PATH + name + "?" + CmsUtils.CMS_UNIQUE_NUMBER + CSS_MODEL_END;
     }
 
-    public static String getAssetPath(final String name){
+    public static String getAssetPath(final String name, final String prepath){
         if(name == null) return null;
         return WebConfigConstants.RESOURCES_LOCATION + name;
     }
