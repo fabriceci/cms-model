@@ -19,7 +19,7 @@ public class CmsStringUtilsTest {
     }
 
     @Test
-    public void shouldReturnSlugifiedString() {
+    public void returnSlugifiedString_ToSlugTest() {
         // given
         String string = "Hello world";
 
@@ -31,7 +31,7 @@ public class CmsStringUtilsTest {
     }
 
     @Test
-    public void shouldTrimWhiteSpacesOtherThanSpace() {
+    public void trimWhiteSpacesOtherThanSpace_ToSlugTest() {
         // given
         String string = "\tHello \tworld \r\t";
 
@@ -44,7 +44,7 @@ public class CmsStringUtilsTest {
 
 
     @Test
-    public void shouldReplaceAccents() {
+    public void replaceAccents_ToSlugTest() {
         // given
         String string = "ÃÕÇÁÓÊÉÚàéè";
 
@@ -57,7 +57,7 @@ public class CmsStringUtilsTest {
 
 
     @Test
-    public void shouldReplacePlusSignToSeparator() {
+    public void replacePlusSignToSeparator_ToSlugTest() {
         // given
         String string = "\tHello+\tworld \r\t";
 
@@ -69,7 +69,7 @@ public class CmsStringUtilsTest {
     }
 
     @Test
-    public void shouldReturnEmptyStringIfNullGiven() {
+    public void returnEmptyStringIfNullGiven_ToSlugTest() {
         // given
         String string = null;
 
@@ -81,7 +81,7 @@ public class CmsStringUtilsTest {
     }
 
     @Test
-    public void shouldNormalizeRepeatedHyphensToSingleHyphenWithHyphenSeparator() {
+    public void normalizeRepeatedHyphensToSingleHyphenWithHyphenSeparator_ToSlugTest() {
         //given
         String string = "a---b___c";
 
